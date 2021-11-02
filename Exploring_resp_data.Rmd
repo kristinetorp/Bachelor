@@ -1,0 +1,362 @@
+---
+title: "Exploring demographic data"
+author: "Kristine Torp"
+date: "9/17/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+#Reading packages 
+pacman::p_load("tidyverse", "stringr", "dplyr", "plyr")
+```
+
+```{r}
+#loading the subject level data 
+df_subject <- read_csv("RRST_VMP_SubLevelData_28-Oct-2021_12-33.csv")
+
+#loading the trail level data 
+df_trial <- read_csv("RRST_VMP_TrialLevelData_28-Oct-2021_12-29.csv")
+
+df<- read_csv("demographics.csv") 
+
+#remove Nas
+
+df <- df %>%
+  drop_na(stormdb)
+
+
+#rename an ID column 
+
+library(plyr)
+df <- rename(df,c("stormdb" = "ID"))
+
+#Remove the zero infront of every ID
+df$ID <- as.numeric(df$ID)
+df$ID <- as.factor(df$ID)
+
+
+#Merge df and df subject by ID 
+
+df <- merge(df,df_subject ,by="ID")
+
+
+
+
+```
+
+
+
+```{r}
+#cleaning the demographic data
+
+
+demo <- df
+
+
+#merge columns that says name and name_eng
+
+#Gender 
+demo$gender[is.na(demo$gender)] <- demo$gender_eng[is.na(demo$gender)]
+#Age
+demo$age[is.na(demo$age)] <- demo$age_eng[is.na(demo$age)]
+#Bmi
+demo$bmi[is.na(demo$bmi)] <- demo$bmi_eng[is.na(demo$bmi)]
+#Height
+demo$height[is.na(demo$height)] <- demo$height_eng[is.na(demo$height)]
+#Handedness
+demo$handedness[is.na(demo$handedness)] <- demo$handedness_eng[is.na(demo$handedness)]
+#Smoking
+demo$smoking[is.na(demo$smoking)] <- demo$smoking_eng[is.na(demo$smoking)]
+#Mental illness
+demo$mental_illness[is.na(demo$mental_illness)] <- demo$mental_illness_eng[is.na(demo$mental_illness)]
+#Mental illness yes 
+demo$mental_illness_yes[is.na(demo$mental_illness_yes)] <- demo$mental_illness_yes_eng[is.na(demo$mental_illness_yes)]
+
+#State trait anxiety inventory
+#stai 1- 20 Y1
+#demo$stai_1[is.na(demo$stai_1)] <- demo$stai_1_eng[is.na(demo$stai_1)]
+#demo$stai_2[is.na(demo$stai_2)] <- demo$stai_2_eng[is.na(demo$stai_2)]
+#demo$stai_3[is.na(demo$stai_3)] <- demo$stai_3_eng[is.na(demo$stai_3)]
+#demo$stai_4[is.na(demo$stai_4)] <- demo$stai_4_eng[is.na(demo$stai_4)]
+#demo$stai_5[is.na(demo$stai_5)] <- demo$stai_5_eng[is.na(demo$stai_5)]
+#demo$stai_6[is.na(demo$stai_6)] <- demo$stai_6_eng[is.na(demo$stai_6)]
+#demo$stai_7[is.na(demo$stai_7)] <- demo$stai_7_eng[is.na(demo$stai_7)]
+#demo$stai_8[is.na(demo$stai_8)] <- demo$stai_8_eng[is.na(demo$stai_8)]
+#demo$stai_9[is.na(demo$stai_9)] <- demo$stai_9_eng[is.na(demo$stai_9)]
+#demo$stai_10[is.na(demo$stai_10)] <- demo$stai_10_eng[is.na(demo$stai_10)]
+#demo$stai_11[is.na(demo$stai_11)] <- demo$stai_11_eng[is.na(demo$stai_11)]
+#demo$stai_12[is.na(demo$stai_12)] <- demo$stai_12_eng[is.na(demo$stai_12)]
+#demo$stai_13[is.na(demo$stai_13)] <- demo$stai_13_eng[is.na(demo$stai_13)]
+#demo$stai_14[is.na(demo$stai_14)] <- demo$stai_14_eng[is.na(demo$stai_14)]
+#demo$stai_15[is.na(demo$stai_15)] <- demo$stai_15_eng[is.na(demo$stai_15)]
+#demo$stai_16[is.na(demo$stai_16)] <- demo$stai_16_eng[is.na(demo$stai_16)]
+#demo$stai_17[is.na(demo$stai_17)] <- demo$stai_17_eng[is.na(demo$stai_17)]
+#demo$stai_18[is.na(demo$stai_18)] <- demo$stai_18_eng[is.na(demo$stai_18)]
+#demo$stai_19[is.na(demo$stai_19)] <- demo$stai_19_eng[is.na(demo$stai_19)]
+#demo$stai_20[is.na(demo$stai_20)] <- demo$stai_20_eng[is.na(demo$stai_20)]
+
+#stai 21-40 Y2
+demo$stai_21[is.na(demo$stai_21)] <- demo$stai_21_eng[is.na(demo$stai_21)]
+demo$stai_22[is.na(demo$stai_22)] <- demo$stai_22_eng[is.na(demo$stai_22)]
+demo$stai_23[is.na(demo$stai_23)] <- demo$stai_23_eng[is.na(demo$stai_23)]
+demo$stai_24[is.na(demo$stai_24)] <- demo$stai_24_eng[is.na(demo$stai_24)]
+demo$stai_25[is.na(demo$stai_25)] <- demo$stai_25_eng[is.na(demo$stai_25)]
+demo$stai_26[is.na(demo$stai_26)] <- demo$stai_26_eng[is.na(demo$stai_26)]
+demo$stai_27[is.na(demo$stai_27)] <- demo$stai_27_eng[is.na(demo$stai_27)]
+demo$stai_28[is.na(demo$stai_28)] <- demo$stai_28_eng[is.na(demo$stai_28)]
+demo$stai_29[is.na(demo$stai_29)] <- demo$stai_29_eng[is.na(demo$stai_29)]
+demo$stai_30[is.na(demo$stai_30)] <- demo$stai_30_eng[is.na(demo$stai_30)]
+demo$stai_31[is.na(demo$stai_31)] <- demo$stai_31_eng[is.na(demo$stai_31)]
+demo$stai_32[is.na(demo$stai_32)] <- demo$stai_32_eng[is.na(demo$stai_32)]
+demo$stai_33[is.na(demo$stai_33)] <- demo$stai_33_eng[is.na(demo$stai_33)]
+demo$stai_34[is.na(demo$stai_34)] <- demo$stai_34_eng[is.na(demo$stai_34)]
+demo$stai_35[is.na(demo$stai_35)] <- demo$stai_35_eng[is.na(demo$stai_35)]
+demo$stai_36[is.na(demo$stai_36)] <- demo$stai_36_eng[is.na(demo$stai_36)]
+demo$stai_37[is.na(demo$stai_37)] <- demo$stai_37_eng[is.na(demo$stai_37)]
+demo$stai_38[is.na(demo$stai_38)] <- demo$stai_38_eng[is.na(demo$stai_38)]
+demo$stai_39[is.na(demo$stai_39)] <- demo$stai_39_eng[is.na(demo$stai_39)]
+demo$stai_40[is.na(demo$stai_40)] <- demo$stai_40_eng[is.na(demo$stai_40)]
+
+
+#sticsa
+demo$sticsa_gm_1[is.na(demo$sticsa_gm_1)] <- demo$sticsa_gm_1_eng[is.na(demo$sticsa_gm_1)]
+demo$sticsa_gm_2[is.na(demo$sticsa_gm_2)] <- demo$sticsa_gm_2_eng[is.na(demo$sticsa_gm_2)]
+demo$sticsa_gm_3[is.na(demo$sticsa_gm_3)] <- demo$sticsa_gm_3_eng[is.na(demo$sticsa_gm_3)]
+demo$sticsa_gm_4[is.na(demo$sticsa_gm_4)] <- demo$sticsa_gm_4_eng[is.na(demo$sticsa_gm_4)]
+demo$sticsa_gm_5[is.na(demo$sticsa_gm_5)] <- demo$sticsa_gm_5_eng[is.na(demo$sticsa_gm_5)]
+demo$sticsa_gm_6[is.na(demo$sticsa_gm_6)] <- demo$sticsa_gm_6_eng[is.na(demo$sticsa_gm_6)]
+demo$sticsa_gm_7[is.na(demo$sticsa_gm_7)] <- demo$sticsa_gm_7_eng[is.na(demo$sticsa_gm_7)]
+demo$sticsa_gm_8[is.na(demo$sticsa_gm_8)] <- demo$sticsa_gm_8_eng[is.na(demo$sticsa_gm_8)]
+demo$sticsa_gm_9[is.na(demo$sticsa_gm_9)] <- demo$sticsa_gm_9_eng[is.na(demo$sticsa_gm_9)]
+demo$sticsa_gm_10[is.na(demo$sticsa_gm_10)] <- demo$sticsa_gm_10_eng[is.na(demo$sticsa_gm_10)]
+demo$sticsa_gm_11[is.na(demo$sticsa_gm_11)] <- demo$sticsa_gm_11_eng[is.na(demo$sticsa_gm_11)]
+demo$sticsa_gm_12[is.na(demo$sticsa_gm_12)] <- demo$sticsa_gm_12_eng[is.na(demo$sticsa_gm_12)]
+demo$sticsa_gm_13[is.na(demo$sticsa_gm_13)] <- demo$sticsa_gm_13_eng[is.na(demo$sticsa_gm_13)]
+demo$sticsa_gm_14[is.na(demo$sticsa_gm_14)] <- demo$sticsa_gm_14_eng[is.na(demo$sticsa_gm_14)]
+demo$sticsa_gm_15[is.na(demo$sticsa_gm_15)] <- demo$sticsa_gm_15_eng[is.na(demo$sticsa_gm_15)]
+demo$sticsa_gm_16[is.na(demo$sticsa_gm_16)] <- demo$sticsa_gm_16_eng[is.na(demo$sticsa_gm_16)]
+demo$sticsa_gm_17[is.na(demo$sticsa_gm_17)] <- demo$sticsa_gm_17_eng[is.na(demo$sticsa_gm_17)]
+demo$sticsa_gm_18[is.na(demo$sticsa_gm_18)] <- demo$sticsa_gm_18_eng[is.na(demo$sticsa_gm_18)]
+demo$sticsa_gm_19[is.na(demo$sticsa_gm_19)] <- demo$sticsa_gm_19_eng[is.na(demo$sticsa_gm_19)]
+demo$sticsa_gm_20[is.na(demo$sticsa_gm_20)] <- demo$sticsa_gm_20_eng[is.na(demo$sticsa_gm_20)]
+demo$sticsa_gm_21[is.na(demo$sticsa_gm_21)] <- demo$sticsa_gm_21_eng[is.na(demo$sticsa_gm_21)]
+
+
+#Select columns i want for my demographic df. 
+
+df_demo <- demo %>%
+  select(
+    ID,
+    gender,
+    language_surveys,
+    age,
+    bmi,
+    height,
+    handedness,
+    smoking,
+    mental_illness,
+    mental_illness_yes
+    
+  )
+
+#MAKE A DATA FRAME WITH ANSWERS FROM STAI AND STICSA
+
+df_anxiety <- demo %>% 
+  dplyr::select(
+    ID,
+    matches("s\\w*_\\d\\d?$")
+    )
+
+#save csv
+write_csv(df_anxiety, "anxiety.csv") 
+```
+
+
+```{r}
+#me finding details for my participant paragraph 
+mean(df_demo$age)
+max(df_demo$age)
+min(df_demo$age)
+mean(df_demo$bmi)
+sd(df_demo$age)
+sd(df_demo$bmi)
+count(df_demo$gender == "1")
+
+count(df_demo$language_surveys == "1")
+```
+
+
+```{r}
+###PRINCIPAL COMPONENT ANLYSIS AND FACTOR ANALYSIS
+
+pacman::p_load("tidyverse","tseries", "psych","GPArotation", "mvtnorm", "polycor","corpcor","GPArotation","pastecs", "corrgram", "e1071")
+
+#Loaded data
+d <- read_csv("anxiety.csv")
+
+## Se Discovering statistics to make a good analysis 
+
+#try deleting column names and the ID column - because??
+
+#deleting ID column 
+d <- d[,-1]
+
+#flip the scores for positive questions in stai y1
+library(car)
+
+##this is just ready for when I get the stai y2 data 
+d$stai_1 <- car::recode(d$stai_1, "4=1; 3=2; 2=3; 1=4")
+d$stai_2 <- car::recode(d$stai_2, "4=1; 3=2; 2=3; 1=4")
+d$stai_5 <- car::recode(d$stai_5, "4=1; 3=2; 2=3; 1=4")
+d$stai_8 <- car::recode(d$stai_8, "4=1; 3=2; 2=3; 1=4")
+d$stai_10 <- car::recode(d$stai_10, "4=1; 3=2; 2=3; 1=4")
+d$stai_11 <- car::recode(d$stai_11, "4=1; 3=2; 2=3; 1=4")
+d$stai_15 <- car::recode(d$stai_15, "4=1; 3=2; 2=3; 1=4")
+d$stai_16 <- car::recode(d$stai_16, "4=1; 3=2; 2=3; 1=4")
+d$stai_19 <- car::recode(d$stai_19, "4=1; 3=2; 2=3; 1=4")
+d$stai_20 <- car::recode(d$stai_20, "4=1; 3=2; 2=3; 1=4")
+
+#flip the scores for positive questions in stai y2
+d$stai_21 <- car::recode(d$stai_21, "4=1; 3=2; 2=3; 1=4")
+d$stai_23 <- car::recode(d$stai_23, "4=1; 3=2; 2=3; 1=4")
+d$stai_26 <- car::recode(d$stai_26, "4=1; 3=2; 2=3; 1=4")
+d$stai_27 <- car::recode(d$stai_27, "4=1; 3=2; 2=3; 1=4")
+d$stai_30 <- car::recode(d$stai_30, "4=1; 3=2; 2=3; 1=4")
+d$stai_33 <- car::recode(d$stai_33, "4=1; 3=2; 2=3; 1=4")
+d$stai_34 <- car::recode(d$stai_34, "4=1; 3=2; 2=3; 1=4")
+d$stai_36 <- car::recode(d$stai_36, "4=1; 3=2; 2=3; 1=4")
+d$stai_39 <- car::recode(d$stai_39, "4=1; 3=2; 2=3; 1=4")
+
+
+#find correlation matrix of data
+cor_matrix <- cor(d)
+
+#view correlation matrix
+cor_matrix
+
+#Bartlett test - I want it to be significant - menas that the correlations are significantly different from zero 
+cortest.bartlett(d)
+
+#The principal component analysis 
+pca1 <- princomp(d, scores = TRUE, cor = TRUE)
+
+summary(pca1) #looking at this summary I might have five components 
+#- Look for eigen values above 1 - means theu explain at least as much variance as the actual variable
+
+loadings(pca1) #we want to see low loading on the components 
+
+plot(pca1)
+
+#making a screeplot 
+screeplot(pca1, type ="line", main = "screeplot")
+
+#not a usefull plot - how the original variables line up in the component plot 
+biplot(pca1)
+
+
+
+
+#Running a parallel test (Horn's) -## why am I doing this??
+parallel <- fa.parallel(d, fm ="minres", fa ="fa", sim = FALSE)
+# I think this plot shows that I need 3 factors
+```
+
+
+```{r}
+#Factor analysis 
+fa <- factanal(d, 3, rotation = "oblimin", scores = "Bartlett")
+#Setting the cutoff to 0.3 to see which loadings are the highest, and making the output easy to interpret
+fa
+print(fa, digits = 3, cutoff = 0.3, sort = FALSE)
+
+f1<-fa$loadings[,1]
+f2<-fa$loadings[,2]
+f3<-fa$loadings[,3]
+
+loadings<-data.frame(f1,f2,f3)
+text <- rownames(loadings)
+
+loadings$Qname <- cbind(text)
+
+#add a new  column to loadings where each questionaire gets their own number 
+library("stringr")
+loadings<- loadings %>% 
+  mutate(quest = if_else(str_starts(Qname,"stai_"), 1, 2))
+
+loadings$quest <- as.factor(loadings$quest)
+
+
+
+p1 <- ggplot(loadings,aes(x=f1,y=f2, colour = quest ))+
+ geom_point(size=2)+
+  coord_cartesian(xlim =c(-1,1), ylim = c(-1,1))
+
+ p1
+
+p2 <- ggplot(loadings, aes(x=f1,y=f3, colour = quest ))+
+ geom_point(size=2)+
+  coord_cartesian(xlim =c(-1,1), ylim = c(-1,1))
+
+p2
+
+p3 <- ggplot(loadings, aes(x=f2,y=f3, colour = quest ))+
+ geom_point(size=2)+
+  coord_cartesian(xlim =c(-1,1), ylim = c(-1,1))
+
+p3
+
+
+#install.packages("scatterplot3d") # Install
+#library("scatterplot3d") # load
+
+scatterplot3d(loadings[,1:3],pch = 16, color= "steelblue", angle = 40,
+              main="3D Scatter Plot",
+              xlim = c(-1,1),
+              ylim = c(-1,1),
+              zlim = c(-1,1),
+              xlab = "f1",
+              ylab = "f2",
+              zlab = "f3")
+
+#Crap I stole from Mikkel
+
+
+plot(fa$loadings[,1], fa$loadings[,2], col="blue",xlim=c(-1,1),ylim = c(-1,1),xlab = "Loadings factor 1", ylab = "Loadings factor 2")
+ 
+
+```
+
+
+```{r}
+
+#Well this gives me which participant that has the lowest or highest score....
+#figuring out which partcipant that scores lowest on each factor 
+which.min(fa$scores[,1])
+
+which.min(fa$scores[,2])
+
+which.min(fa$scores[,3])
+
+#figuring out which participant that scores highest on each factor 
+
+which.max(fa$scores[,1])
+
+which.max(fa$scores[,2])
+
+which.max(fa$scores[,3])
+
+
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
