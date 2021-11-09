@@ -9,22 +9,139 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## R Markdown
-
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r cars}
-summary(cars)
+```{r}
+#Reading packages 
+pacman::p_load("tidyverse", "stringr", "dplyr", "plyr")
 ```
 
-## Including Plots
 
-You can also embed plots, for example:
+```{r}
+#loading the subject level data including metacognitive scores 
+df_subject <- read_csv("RRST_VMP_SubjectData_jointtable.csv")
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+#loading the trail level data 
+df_trial <- read_csv("RRST_VMP_TrialLevelData_28-Oct-2021_12-29.csv")
+
+df_demo<- read_csv("demographics.csv") 
+
+#remove Nas - the data goes from 250 to 227 when removing participants with no ID
+
+df_demo <- df_demo %>%
+  drop_na(stormdb)
+
+
+#rename an ID column 
+
+df_demo <- rename(df_demo,c("stormdb" = "ID"))
+
+#Remove the zero infront of every ID
+df_demo$ID <- as.numeric(df_demo$ID)
+df_demo$ID <- as.factor(df_demo$ID)
+
+
+#Merge df_demo and df_subject by ID 
+df_subject$ID <- as.factor(df_subject$ID)
+
+df_RRST_sub <- left_join(df_demo,df_subject ,by="ID")
+
+#merge columns that says name and name_eng
+
+#Gender 
+df_RRST_sub$gender[is.na(df_RRST_sub$gender)] <- df_RRST_sub$gender_eng[is.na(df_RRST_sub$gender)]
+#Age
+df_RRST_sub$age[is.na(df_RRST_sub$age)] <- df_RRST_sub$age_eng[is.na(df_RRST_sub$age)]
+#Bmi
+df_RRST_sub$bmi[is.na(df_RRST_sub$bmi)] <- df_RRST_sub$bmi_eng[is.na(df_RRST_sub$bmi)]
+#Height
+df_RRST_sub$height[is.na(df_RRST_sub$height)] <- df_RRST_sub$height_eng[is.na(df_RRST_sub$height)]
+#Handedness
+df_RRST_sub$handedness[is.na(df_RRST_sub$handedness)] <- df_RRST_sub$handedness_eng[is.na(df_RRST_sub$handedness)]
+#Smoking
+df_RRST_sub$smoking[is.na(df_RRST_sub$smoking)] <- df_RRST_sub$smoking_eng[is.na(df_RRST_sub$smoking)]
+#Mental illness
+df_RRST_sub$mental_illness[is.na(df_RRST_sub$mental_illness)] <- df_RRST_sub$mental_illness_eng[is.na(df_RRST_sub$mental_illness)]
+#Mental illness yes 
+df_RRST_sub$mental_illness_yes[is.na(df_RRST_sub$mental_illness_yes)] <- df_RRST_sub$mental_illness_yes_eng[is.na(df_RRST_sub$mental_illness_yes)]
+
+#I rename the dataframe because I have some old code I might as well just use 
+
+demo <- df_RRST_sub
+
+#stai 21-40 Y2
+demo$stai_21[is.na(demo$stai_21)] <- demo$stai_21_eng[is.na(demo$stai_21)]
+demo$stai_22[is.na(demo$stai_22)] <- demo$stai_22_eng[is.na(demo$stai_22)]
+demo$stai_23[is.na(demo$stai_23)] <- demo$stai_23_eng[is.na(demo$stai_23)]
+demo$stai_24[is.na(demo$stai_24)] <- demo$stai_24_eng[is.na(demo$stai_24)]
+demo$stai_25[is.na(demo$stai_25)] <- demo$stai_25_eng[is.na(demo$stai_25)]
+demo$stai_26[is.na(demo$stai_26)] <- demo$stai_26_eng[is.na(demo$stai_26)]
+demo$stai_27[is.na(demo$stai_27)] <- demo$stai_27_eng[is.na(demo$stai_27)]
+demo$stai_28[is.na(demo$stai_28)] <- demo$stai_28_eng[is.na(demo$stai_28)]
+demo$stai_29[is.na(demo$stai_29)] <- demo$stai_29_eng[is.na(demo$stai_29)]
+demo$stai_30[is.na(demo$stai_30)] <- demo$stai_30_eng[is.na(demo$stai_30)]
+demo$stai_31[is.na(demo$stai_31)] <- demo$stai_31_eng[is.na(demo$stai_31)]
+demo$stai_32[is.na(demo$stai_32)] <- demo$stai_32_eng[is.na(demo$stai_32)]
+demo$stai_33[is.na(demo$stai_33)] <- demo$stai_33_eng[is.na(demo$stai_33)]
+demo$stai_34[is.na(demo$stai_34)] <- demo$stai_34_eng[is.na(demo$stai_34)]
+demo$stai_35[is.na(demo$stai_35)] <- demo$stai_35_eng[is.na(demo$stai_35)]
+demo$stai_36[is.na(demo$stai_36)] <- demo$stai_36_eng[is.na(demo$stai_36)]
+demo$stai_37[is.na(demo$stai_37)] <- demo$stai_37_eng[is.na(demo$stai_37)]
+demo$stai_38[is.na(demo$stai_38)] <- demo$stai_38_eng[is.na(demo$stai_38)]
+demo$stai_39[is.na(demo$stai_39)] <- demo$stai_39_eng[is.na(demo$stai_39)]
+demo$stai_40[is.na(demo$stai_40)] <- demo$stai_40_eng[is.na(demo$stai_40)]
+
+
+#sticsa
+demo$sticsa_gm_1[is.na(demo$sticsa_gm_1)] <- demo$sticsa_gm_1_eng[is.na(demo$sticsa_gm_1)]
+demo$sticsa_gm_2[is.na(demo$sticsa_gm_2)] <- demo$sticsa_gm_2_eng[is.na(demo$sticsa_gm_2)]
+demo$sticsa_gm_3[is.na(demo$sticsa_gm_3)] <- demo$sticsa_gm_3_eng[is.na(demo$sticsa_gm_3)]
+demo$sticsa_gm_4[is.na(demo$sticsa_gm_4)] <- demo$sticsa_gm_4_eng[is.na(demo$sticsa_gm_4)]
+demo$sticsa_gm_5[is.na(demo$sticsa_gm_5)] <- demo$sticsa_gm_5_eng[is.na(demo$sticsa_gm_5)]
+demo$sticsa_gm_6[is.na(demo$sticsa_gm_6)] <- demo$sticsa_gm_6_eng[is.na(demo$sticsa_gm_6)]
+demo$sticsa_gm_7[is.na(demo$sticsa_gm_7)] <- demo$sticsa_gm_7_eng[is.na(demo$sticsa_gm_7)]
+demo$sticsa_gm_8[is.na(demo$sticsa_gm_8)] <- demo$sticsa_gm_8_eng[is.na(demo$sticsa_gm_8)]
+demo$sticsa_gm_9[is.na(demo$sticsa_gm_9)] <- demo$sticsa_gm_9_eng[is.na(demo$sticsa_gm_9)]
+demo$sticsa_gm_10[is.na(demo$sticsa_gm_10)] <- demo$sticsa_gm_10_eng[is.na(demo$sticsa_gm_10)]
+demo$sticsa_gm_11[is.na(demo$sticsa_gm_11)] <- demo$sticsa_gm_11_eng[is.na(demo$sticsa_gm_11)]
+demo$sticsa_gm_12[is.na(demo$sticsa_gm_12)] <- demo$sticsa_gm_12_eng[is.na(demo$sticsa_gm_12)]
+demo$sticsa_gm_13[is.na(demo$sticsa_gm_13)] <- demo$sticsa_gm_13_eng[is.na(demo$sticsa_gm_13)]
+demo$sticsa_gm_14[is.na(demo$sticsa_gm_14)] <- demo$sticsa_gm_14_eng[is.na(demo$sticsa_gm_14)]
+demo$sticsa_gm_15[is.na(demo$sticsa_gm_15)] <- demo$sticsa_gm_15_eng[is.na(demo$sticsa_gm_15)]
+demo$sticsa_gm_16[is.na(demo$sticsa_gm_16)] <- demo$sticsa_gm_16_eng[is.na(demo$sticsa_gm_16)]
+demo$sticsa_gm_17[is.na(demo$sticsa_gm_17)] <- demo$sticsa_gm_17_eng[is.na(demo$sticsa_gm_17)]
+demo$sticsa_gm_18[is.na(demo$sticsa_gm_18)] <- demo$sticsa_gm_18_eng[is.na(demo$sticsa_gm_18)]
+demo$sticsa_gm_19[is.na(demo$sticsa_gm_19)] <- demo$sticsa_gm_19_eng[is.na(demo$sticsa_gm_19)]
+demo$sticsa_gm_20[is.na(demo$sticsa_gm_20)] <- demo$sticsa_gm_20_eng[is.na(demo$sticsa_gm_20)]
+demo$sticsa_gm_21[is.na(demo$sticsa_gm_21)] <- demo$sticsa_gm_21_eng[is.na(demo$sticsa_gm_21)]
+
+#I bring my old dataframe (name) back
+
+df_RRST_sub <- demo
+
+#Select columns i want for my combined dataframe. 
+
+df_RRST_sub <- df_RRST_sub %>%
+  dplyr::select(
+    ID,
+    gender,
+    language_surveys,
+    age,
+    bmi,
+    height,
+    handedness,
+    smoking,
+    mental_illness,
+    mental_illness_yes,
+    matches("psi_\\w*"),
+    matches("stai_\\d\\d$"),
+    matches("sticsa_gm_\\d\\d$"),
+    starts_with("dis"),
+    dPrime,
+    metaD,
+    mRatio,
+    aRoc,
+     )
+
+
+#I know have a dataframe with subject level RRST measures as well as their demographic information and anxiety questionaire scores. 
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
