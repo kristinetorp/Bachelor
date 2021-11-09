@@ -1,0 +1,130 @@
+---
+title: "Looking at respiroceptive data"
+author: "Kristine Torp"
+date: "11/2/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+#Reading packages 
+pacman::p_load("tidyverse", "stringr", "dplyr", "plyr")
+```
+
+```{r}
+#loading the respiroceptive data i prepared in the the factor analysis document 
+
+#loading the subject level data 
+df_res_sub <- read_csv("RRST_DEMO.csv")
+
+#response = correct 1 or incorrect 0
+#responseLR = left response first interval harder 0, right response second interval harder 1.
+
+#loading the trail level data 
+df_res_trial <- read_csv("RRST_VMP_TrialLevelData_28-Oct-2021_12-29.csv")
+
+
+```
+
+```{r}
+
+#Log transforming the slopes
+df_res_sub <- df_res_sub %>% mutate(psi_slope_log = log(psi_slope))
+
+#some plots inspecting the data 
+
+#the thresholds 
+ggplot(df_res_sub, aes(x = psi_thresh)) +
+  geom_histogram(aes(y=..density..),binwidth=0.25)+
+  stat_function(fun = dnorm,args = list(mean = mean(df_res_sub$psi_thresh, na.rm = TRUE), sd = sd(df_res_sub$psi_thresh, na.rm = TRUE)), colour = "darkgreen", size = 1)
+
+
+#the slopes 
+
+ggplot(df_res_sub, aes(x = psi_slope_log)) +
+  geom_histogram(aes(y=..density..),binwidth=0.25)+
+  stat_function(fun = dnorm,args = list(mean = mean(df_res_sub$psi_slope_log, na.rm = TRUE), sd = sd(df_res_sub$psi_slope_log, na.rm = TRUE)), colour = "darkgreen", size = 1)
+
+#Should i then filter the data to only include slopes with a log value lower than five?
+df_res_sub <-df_res_sub %>% 
+  filter(psi_slope_log < 3*sd(psi_slope_log, na.rm = T))
+
+
+ggplot(df_res_sub, aes(x = psi_slope_log)) +
+  geom_histogram(aes(y=..density..),binwidth=0.25)+
+  stat_function(fun = dnorm,args = list(mean = mean(df_res_sub$psi_slope_log, na.rm = TRUE), sd = sd(df_res_sub$psi_slope_log, na.rm = TRUE)), colour = "darkgreen", size = 1)
+
+```
+
+```{r}
+#I should do something with the confidence ratings 
+#Each participant went through 120 trials - all have a confidence score 
+
+```
+
+```{r}
+#I am filtering the data to only keep trials from participants that I have demographic data from as well. 
+length(unique(df_res_trial$ID))
+
+list_id <- unique(df_res_sub$ID, na.rm = TRUE)
+df_res_trial <- df_res_trial %>% 
+  filter(ID %in% list_id)
+#Doing this decreased my trial observations from 35040 to 19920... NOT GOOD
+
+
+#Recoding from responseLR = left response first interval harder 0, right response second interval harder 1 to 1 for first interval and 2 for second interval 
+df_res_trial$responseLR <- car::recode(df_res_trial$responseLR, "1=2")
+df_res_trial$responseLR <- car::recode(df_res_trial$responseLR, "0=1")
+
+#Recoding the response column from 0 and 1 to incorrect and correct 
+library("stringr")
+df_res_trial<- df_res_trial %>% 
+  mutate(response = if_else(response == 1,"correct","incorrect"))
+
+df_res_trial$response <- as.factor(df_res_trial$response)
+
+#Finding the mean confidence scores across correct and incorrect trials 
+
+aggregate(x = df_res_trial$confidence, 
+          by = list(df_res_trial$response),
+          FUN = mean,
+          na.rm = T)
+
+
+df_res_trial <- df_res_trial %>%
+  drop_na(confidence)
+#drops the observation count from 19920 to 19886
+df_res_trial <- df_res_trial %>%
+  drop_na(response)
+#No Na's Here
+
+ggplot(df_res_trial, aes(confidence, fill = response)) + geom_density(alpha = 0.2)
+
+ggplot(df_res_trial, aes(x=response, y=confidence, fill = response))+
+  geom_bar(stat='summary', fun.y = mean, width =0.5)+
+  geom_errorbar(stat ='summary', fun.data =mean_se, width =0.25)+
+  labs(x ="Response", y ="confidence")+
+  theme_bw()+ggtitle("Confidence across correct and incorrect trials")
+
+
+ggplot(df_res_trial, aes(x=response, y=confidence, fill = response))+labs(x ="Response", y ="Confidence")+
+  geom_boxplot(width =0.5) +
+  stat_summary(fun.y =mean, geom ="point", shape =23, colour ="Black") +
+  ggtitle("Confidence across correct and incorrect trials")
+
+ggplot(df_res_trial, aes(x=response, y=confidence, fill = response))+labs(x ="Response", y ="Confidence")+
+  geom_violin(width =0.5) +
+  stat_summary(fun.y =mean, geom ="point", shape =23, colour ="Black") +
+  ggtitle("Confidence across correct and incorrect trials")
+
+
+ggplot(df_res_trial, aes(x = confidence)) +
+  geom_histogram(aes(y=..density..),binwidth=0.25)+
+  stat_function(fun = dnorm,args = list(mean = mean(df_trial$confidence, na.rm = TRUE), sd = sd(df_trial$confidence, na.rm = TRUE)), colour = "darkgreen", size = 1)
+
+
+#reaction time and accuracy 
+
+
+```
+
