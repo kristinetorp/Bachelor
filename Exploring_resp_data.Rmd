@@ -43,6 +43,16 @@ df <- merge(df,df_subject ,by="ID")
 
 
 
+#write csv to use for respiroceptive inspection in other mark down
+df_res_sub <- df %>% 
+  dplyr::select(
+    ID,
+    matches("psi_\\w*"),
+    starts_with("dis"),
+  
+    )
+write_csv(df_res_sub, "sublevel_respiroception.csv") 
+
 
 ```
 

@@ -17,6 +17,7 @@ pacman::p_load("tidyverse", "stringr", "dplyr", "plyr")
 
 ```{r}
 #loading the subject level data including metacognitive scores 
+
 df_subject <- read_csv("RRST_VMP_SubjectData_jointtable.csv")
 
 #loading the trail level data 
@@ -143,5 +144,32 @@ df_RRST_sub <- df_RRST_sub %>%
 
 
 #I know have a dataframe with subject level RRST measures as well as their demographic information and anxiety questionaire scores. 
+
+write_csv(df_RRST_sub,"RRST_DEMO.csv")
+
+#MAKE A DATA FRAME WITH ANSWERS FROM STAI AND STICSA to use for factor analysis. 
+
+df_anxiety <- df_RRST_sub %>% 
+  dplyr::select(
+    ID,
+    matches("s\\w*_\\d\\d?$")
+    )
+
+#save csv
+write_csv(df_anxiety, "anxiety.csv") 
+```
+
+
+```{r}
+#me finding details for my participant paragraph 
+mean(df_RRST_sub$age)
+max(df_RRST_sub$age)
+min(df_RRST_sub$age)
+mean(df_RRST_sub$bmi, na.rm = TRUE)
+sd(df_RRST_sub$age)
+sd(df_RRST_sub$bmi, na.rm = TRUE)
+count(df_RRST_sub$gender == "1")
+
+count(df_RRST_sub$language_surveys == "1")
 ```
 
