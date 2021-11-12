@@ -8,7 +8,7 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 #Reading packages 
-pacman::p_load("tidyverse", "stringr", "dplyr", "plyr")
+pacman::p_load("tidyverse", "stringr", "dplyr", "plyr", "ggdist")
 ```
 
 ```{r}
@@ -18,7 +18,7 @@ pacman::p_load("tidyverse", "stringr", "dplyr", "plyr")
 df_res_sub <- read_csv("RRST_DEMO.csv")
 
 #response = correct 1 or incorrect 0
-#responseLR = left response first interval harder 0, right response second interval harder 1.
+#responseLR = left response first interval harder = 0, right response second interval harder = 1.
 
 #loading the trail level data 
 df_res_trial <- read_csv("RRST_VMP_TrialLevelData_28-Oct-2021_12-29.csv")
@@ -45,7 +45,7 @@ ggplot(df_res_sub, aes(x = psi_slope_log)) +
   geom_histogram(aes(y=..density..),binwidth=0.25)+
   stat_function(fun = dnorm,args = list(mean = mean(df_res_sub$psi_slope_log, na.rm = TRUE), sd = sd(df_res_sub$psi_slope_log, na.rm = TRUE)), colour = "darkgreen", size = 1)
 
-#Should i then filter the data to only include slopes with a log value lower than five?
+#Should i then filter the data to only include slopes less than 3 sd from the mean
 df_res_sub <-df_res_sub %>% 
   filter(psi_slope_log < 3*sd(psi_slope_log, na.rm = T))
 
@@ -120,11 +120,256 @@ ggplot(df_res_trial, aes(x=response, y=confidence, fill = response))+labs(x ="Re
 
 ggplot(df_res_trial, aes(x = confidence)) +
   geom_histogram(aes(y=..density..),binwidth=0.25)+
-  stat_function(fun = dnorm,args = list(mean = mean(df_trial$confidence, na.rm = TRUE), sd = sd(df_trial$confidence, na.rm = TRUE)), colour = "darkgreen", size = 1)
+  stat_function(fun = dnorm,args = list(mean = mean(df_res_trial$confidence, na.rm = TRUE), sd = sd(df_res_trial$confidence, na.rm = TRUE)), colour = "darkgreen", size = 1)
 
 
-#reaction time and accuracy 
+#the fanciest plot - looks like the one Niia made 
+
+library("stringr")
+df_res_trial<- df_res_trial %>% 
+  mutate(confidence_bin = ifelse(confidence < 25, 1, 
+                                  ifelse(confidence >=25 & confidence < 50, 2, 
+                                         ifelse(confidence >=50 & confidence < 75, 3, 4))))
 
 
+ggplot(df_res_trial, aes(x = confidence_bin, fill = response)) +
+  geom_histogram(aes(y=..density..),binwidth=0.50, position = "dodge")+
+  theme_minimal()
+
+df_cor <- df_res_trial %>% 
+  filter(response == "correct")
+
+df_incor <- df_res_trial %>% 
+  filter(response == "incorrect") %>% 
+  mutate(confidence_bin = confidence_bin - 0.5
+  )
+
+df_cor %>% 
+  ggplot(., aes(x = confidence_bin, fill = response) ) +
+  geom_histogram(aes(y = stat(count/ sum(count))), binwidth=0.50, position = "dodge") +
+  geom_histogram(data = df_incor, aes(y = stat(count/ sum(count))), binwidth=0.50, position = "dodge") +
+  theme_minimal()+
+  labs(x ="Confidence", y ="PDF", title = "Confidence ratings by accuracy")+
+  scale_fill_manual(values = c("dark green", "#F8766D" ))
+
+```
+
+```{r}
+#Exploring reaction time
+ggplot(df_res_trial, aes(x = RT)) +
+  geom_histogram(aes(y=..density..),binwidth=0.25)+
+  stat_function(fun = dnorm,args = list(mean = mean(df_res_trial$RT, na.rm = TRUE), sd = sd(df_res_trial$RT, na.rm = TRUE)), colour = "darkgreen", size = 1)
+
+#Log transforming the reaction times 
+df_res_trial <- df_res_trial %>% mutate(RT_log = log(RT))
+
+ggplot(df_res_trial, aes(x = RT_log)) +
+  geom_histogram(aes(y=..density..),binwidth=0.25)+
+  stat_function(fun = dnorm,args = list(mean = mean(df_res_trial$RT_log, na.rm = TRUE), sd = sd(df_res_trial$RT_log, na.rm = TRUE)), colour = "darkgreen", size = 1)
+
+#Should i then filter the data to only include slopes less than 3 sd from the mean (It changes nothing in this case)
+df_res_trial <-df_res_trial %>% 
+  filter(RT_log < 3*sd(RT_log, na.rm = T))
+
+ggplot(df_res_trial, aes(x = RT_log)) +
+  geom_histogram(aes(y=..density..),binwidth=0.15)+
+  stat_function(fun = dnorm,args = list(mean = mean(df_res_trial$RT_log, na.rm = TRUE), sd = sd(df_res_trial$RT_log, na.rm = TRUE)), colour = "darkgreen", size = 1)
+
+#plot reaction time for the correct and incorrect trials 
+
+ggplot(df_res_trial, aes(x=response, y=RT, fill = response))+
+  geom_bar(stat='summary', fun.y = mean, width =0.5)+
+  geom_errorbar(stat ='summary', fun.data =mean_se, width =0.25)+
+  labs(x ="Response", y ="Reaction time")+
+  theme_bw()+ggtitle("Reaction time across correct and incorrect trials")
+
+ggplot(df_res_trial, aes(RT, fill = response)) + geom_density(alpha = 0.2)
+
+
+```
+```{r}
+#Exploring Accuracy 
+#Calculating an accuracy score
+
+df_accuracy <- df_res_trial %>% 
+  select(ID, response)
+
+library("stringr")
+df_accuracy<- df_accuracy %>% 
+  mutate(response = if_else(response == "correct",1,0))
+  
+
+df_accuracy$response <- as.numeric(df_accuracy$response)
+df_accuracyID <- as.factor(df_accuracy$ID)
+
+
+length(unique(df_accuracy$ID))
+
+
+#Finding the sum response scores across IDs
+
+df2 <- aggregate(x = df_accuracy$response, 
+          by = list(df_accuracy$ID),
+          FUN = sum,
+          na.rm = T)
+
+
+
+df2 = rename(df2, c("Group.1" = "ID", "x" = "sumResponse"))
+
+
+#calculate accuracy 
+library(data.table)
+
+x<- count(df_accuracy,c('ID'))
+
+#merge df2 and x 
+
+df2 <- left_join(df2,x ,by="ID")
+
+df2 <- df2 %>% 
+  mutate(accuracy = sumResponse/freq) 
+
+
+ggplot(df2, aes(x = accuracy)) +
+  geom_histogram(aes(y=..density..),binwidth=0.008)+
+  stat_function(fun = dnorm,args = list(mean = mean(df2$accuracy, na.rm = TRUE), sd = sd(df2$accuracy, na.rm = TRUE)), colour = "darkgreen", size = 1)
+
+
+
+
+```
+
+
+
+
+```{r}
+#trying to make a raincloud plot looking at stim level by confidence rating 
+
+#making a confidence_bin column that are factor to fill by. 
+
+df_res_trial <- df_res_trial %>% 
+  mutate(confidence_bin_fact = as.factor(confidence_bin))
+
+#Recalculating the stimulus level as percentage of obstruction 
+df_res_trial <- df_res_trial %>% 
+  mutate(percentObstruction = (stimLevel/18)*100)
+
+#create a new data frame with 4 entries pr. partcipants so the mean obstruction level for every level of confidence 
+df_res_trial$ID <- as.factor(df_res_trial$ID)
+
+df_plot_summary <- df_res_trial %>%
+  select(ID, confidence_bin_fact,percentObstruction)
+
+library(tidyr)
+df_plot_summary %>% drop_na()
+
+df1 = aggregate(df_plot_summary,
+                by = list(df_plot_summary$ID, df_plot_summary$confidence_bin_fact),
+                FUN = mean,
+                na.rm = TRUE)
+
+#df1$confidence_bin_fact <- NULL
+#df1$ID <- NUll
+
+df1 = rename(df1, c("Group.1" = "ID", "Group.2" = "confidence_bin"))
+
+df1$percentObstruction <- as.numeric(df1$percentObstruction)
+df1$ID <- as.factor(df1$ID)
+df1$confidence_bin <- as.factor(df1$confidence_bin)
+
+  
+  
+
+ggplot(df_res_trial, aes(x = confidence_bin, y = percentObstruction, fill = confidence_bin_fact)) + 
+  ggdist::stat_halfeye( adjust = .5, width = .6, .width = 0, justification = -.2, point_colour = NA) + 
+  geom_boxplot( width = .12, outlier.color = NA, outlier.shape = NA, alpha = 0.5 )+
+  labs(x ="Confidence rating ", y ="% obstruction", title = "Stimulus level by confidence rating")+
+  geom_point(size = 1.3, alpha = .06, position = position_jitter( seed = 1, width = .1 )) 
+#summarized data 
+ggplot(df1, aes(x = confidence_bin, y = percentObstruction, fill = confidence_bin)) + 
+  ggdist::stat_halfeye( adjust = .5, width = .6, .width = 0, justification = -.2, point_colour = NA) + 
+  geom_boxplot( width = .12, outlier.color = NA, outlier.shape = NA, alpha = 0.5 )+
+  labs(x ="Confidence rating ", y ="% obstruction", title = "Stimulus level by confidence rating")+
+  geom_point(size = 1.3, alpha = .06, position = position_jitter( seed = 1, width = .1 )) +
+  theme_cowplot()
+ 
+  ggplot(df_res_trial, aes(x = confidence_bin, y = percentObstruction, fill = confidence_bin_fact)) + 
+      geom_half_violin()+
+    geom_half_boxplot(width = .2, outlier.shape = NA) +
+    theme_cowplot()
+  
+#summarized data 
+  ggplot(df1, aes(x = confidence_bin, y = percentObstruction, fill = confidence_bin)) + 
+      geom_half_violin()+
+    geom_half_boxplot(width = .2, outlier.shape = NA) +
+    theme_cowplot()
+  #  geom_jitter()
+  
+
+  
+    
+
+
+```
+
+```{r}
+#Exploring criterion measures
+#proportion of left and right responses 
+
+df_criterion <- df_res_trial %>% 
+  select(ID, responseLR)
+
+library("stringr")
+df_criterion<- df_criterion %>% 
+  mutate(responseLR = if_else(responseLR == "2",1,0))
+  
+
+# df_criterion$responseLR <- as.numeric(df_criterion$responseLR)
+# df_criterionID <- as.factor(df_criterion$ID)
+
+
+length(unique(df_criterion$ID))
+
+
+#Finding the sum scores across IDs a left response = 0 and a right response = 1 
+
+df3 <- aggregate(x = df_criterion$responseLR, 
+          by = list(df_criterion$ID),
+          FUN = sum,
+          na.rm = T)
+
+
+
+df3 = rename(df3, c("Group.1" = "ID", "x" = "rightResponse"))
+
+#calculate proportion of right responses 
+library(data.table)
+
+y<- count(df_criterion,c('ID'))
+
+#merge df2 and x 
+
+df3 <- left_join(df3,y ,by="ID")
+
+df3 <- df3 %>% 
+  mutate(criterion = rightResponse/freq) 
+
+
+ggplot(df3, aes(x = criterion)) +
+  geom_histogram(aes(y=..density..),binwidth=0.008)+
+   stat_function(fun = dnorm,args = list(mean = mean(df3$criterion, na.rm = TRUE), sd = sd(df3$criterion, na.rm = TRUE)), colour = "darkgreen", size = 1)
+
+
+
+```
+
+
+```{r}
+#exploring sensitivity dPrime
+
+ggplot(df_res_sub, aes(x = dPrime)) +
+  geom_histogram(aes(y=..density..),binwidth=0.05)+
+  stat_function(fun = dnorm,args = list(mean = mean(df_res_sub$dPrime, na.rm = TRUE), sd = sd(df_res_sub$dPrime, na.rm = TRUE)), colour = "darkgreen", size = 1)
 ```
 

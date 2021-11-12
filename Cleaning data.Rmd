@@ -160,16 +160,56 @@ write_csv(df_anxiety, "anxiety.csv")
 ```
 
 
+
 ```{r}
-#me finding details for my participant paragraph 
+#Just looking at the demographic data given to me - without considering how many of these participants i actually have RRST and HRD data on 
+#Okay i use the RRST_DEMO: csv - since it contains 227 partcipants wich is the same as the demographics when participnats with no stormdb ID are removed 
+
+#Finding details for my participant paragraph 
+
+df_RRST_sub <- read_csv("RRST_DEMO.csv")
+df_RRST_sub$gender <- as.factor(df_RRST_sub$gender)
+df_RRST_sub$smoking <- as.factor(df_RRST_sub$smoking)
+
 mean(df_RRST_sub$age)
+sd(df_RRST_sub$age)
 max(df_RRST_sub$age)
 min(df_RRST_sub$age)
+
+ggplot(df_RRST_sub, aes(x = age)) +
+  geom_histogram(aes(y=..density..),binwidth=0.25)+
+  stat_function(fun = dnorm,args = list(mean = mean(df_RRST_sub$age, na.rm = TRUE), sd = sd(df_RRST_sub$age, na.rm = TRUE)), colour = "darkgreen", size = 1)+
+  labs(title = "Age distribution")
+
 mean(df_RRST_sub$bmi, na.rm = TRUE)
-sd(df_RRST_sub$age)
 sd(df_RRST_sub$bmi, na.rm = TRUE)
+
+mean(df_RRST_sub$height, na.rm = TRUE)
+sd(df_RRST_sub$height, na.rm = TRUE)
+ggplot(df_RRST_sub, aes(x = height)) +
+  geom_histogram(aes(y=..density..),binwidth=0.25)+
+  stat_function(fun = dnorm,args = list(mean = mean(df_RRST_sub$height, na.rm = TRUE), sd = sd(df_RRST_sub$height, na.rm = TRUE)), colour = "darkgreen", size = 1)
+
+
 count(df_RRST_sub$gender == "1")
 
+
 count(df_RRST_sub$language_surveys == "1")
+
+#looking at smoking - but i doesn't make much sense when I don't know the scale. 
+count(df_RRST_sub$smoking == "5")
+ggplot(df_RRST_sub, aes(x = smoking)) +
+  geom_histogram(aes(y=..density..),binwidth=0.25)+
+  stat_function(fun = dnorm,args = list(mean = mean(df_RRST_sub$smoking, na.rm = TRUE), sd = sd(df_RRST_sub$smoking, na.rm = TRUE)), colour = "darkgreen", size = 1)
+
+
+#me doing stupid stuff - but I found out that someone has an ID that is 51493 - which makes no sense 
+stupid<- read_csv("demographics.csv")
+mean(stupid$age)
+sd(stupid$age)
+max(stupid$stormdb, na.rm = TRUE)
+min(stupid$stormdb, na.rm = TRUE)
+
+
 ```
 

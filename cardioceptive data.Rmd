@@ -1,0 +1,39 @@
+---
+title: "Cardioceptive data"
+author: "Kristine Torp"
+date: "11/12/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+#Reading packages 
+pacman::p_load("tidyverse", "stringr", "dplyr", "plyr", "ggdist")
+```
+
+.
+```{r}
+#Loading data 
+df_cardio <- read.csv("hrd.tsv", sep = "\t")
+
+#creating an ID column 
+df_cardio <- df_cardio %>% 
+  mutate(ID = str_replace_all(df_cardio$participant_id, "\\D+", " "))
+
+#Remove the zero in front of every ID
+df_cardio$ID <- as.numeric(df_cardio$ID)
+df_cardio$ID <- as.factor(df_cardio$ID)
+
+#remove participants with no ID 
+df_cardio <- df_cardio %>%
+  drop_na(ID)
+
+#I should only keep interoceptive trials and Base HRD trials 
+# that should solve my problems 
+
+#merge this dataframe with the RRST_DEMO  DID NOT WORK! - because I have no Idea, what is going on in the df_cardio :-) 
+# df_res_sub$ID <- as.factor(df_res_sub$ID)
+# 
+# df_all <- merge(df_res_sub,df_cardio ,by="ID")
+
+```
