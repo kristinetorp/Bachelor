@@ -45,31 +45,20 @@ ggplot(df_res_sub, aes(x = psi_slope_log)) +
   geom_histogram(aes(y=..density..),binwidth=0.25)+
   stat_function(fun = dnorm,args = list(mean = mean(df_res_sub$psi_slope_log, na.rm = TRUE), sd = sd(df_res_sub$psi_slope_log, na.rm = TRUE)), colour = "darkgreen", size = 1)
 
-#Should i then filter the data to only include slopes less than 3 sd from the mean
-df_res_sub <-df_res_sub %>% 
-  filter(psi_slope_log < 3*sd(psi_slope_log, na.rm = T))
-
-
-ggplot(df_res_sub, aes(x = psi_slope_log)) +
-  geom_histogram(aes(y=..density..),binwidth=0.25)+
-  stat_function(fun = dnorm,args = list(mean = mean(df_res_sub$psi_slope_log, na.rm = TRUE), sd = sd(df_res_sub$psi_slope_log, na.rm = TRUE)), colour = "darkgreen", size = 1)
 
 ```
+###Trial level RRST data 
 
 ```{r}
-#I should do something with the confidence ratings 
-#Each participant went through 120 trials - all have a confidence score 
+##Looking at trial level data 
 
-```
-
-```{r}
 #I am filtering the data to only keep trials from participants that I have demographic data from as well. 
 length(unique(df_res_trial$ID))
 
 list_id <- unique(df_res_sub$ID, na.rm = TRUE)
 df_res_trial <- df_res_trial %>% 
   filter(ID %in% list_id)
-#Doing this decreased my trial observations from 35040 to 19920... NOT GOOD
+#Doing this decreased my trial observations from 35040 to 19920... NOT GOOD - NOT True anymore 
 
 
 #Recoding from responseLR = left response first interval harder 0, right response second interval harder 1 to 1 for first interval and 2 for second interval 
@@ -167,13 +156,6 @@ ggplot(df_res_trial, aes(x = RT_log)) +
   geom_histogram(aes(y=..density..),binwidth=0.25)+
   stat_function(fun = dnorm,args = list(mean = mean(df_res_trial$RT_log, na.rm = TRUE), sd = sd(df_res_trial$RT_log, na.rm = TRUE)), colour = "darkgreen", size = 1)
 
-#Should i then filter the data to only include slopes less than 3 sd from the mean (It changes nothing in this case)
-df_res_trial <-df_res_trial %>% 
-  filter(RT_log < 3*sd(RT_log, na.rm = T))
-
-ggplot(df_res_trial, aes(x = RT_log)) +
-  geom_histogram(aes(y=..density..),binwidth=0.15)+
-  stat_function(fun = dnorm,args = list(mean = mean(df_res_trial$RT_log, na.rm = TRUE), sd = sd(df_res_trial$RT_log, na.rm = TRUE)), colour = "darkgreen", size = 1)
 
 #plot reaction time for the correct and incorrect trials 
 
@@ -187,6 +169,9 @@ ggplot(df_res_trial, aes(RT, fill = response)) + geom_density(alpha = 0.2)
 
 
 ```
+
+
+
 ```{r}
 #Exploring Accuracy 
 #Calculating an accuracy score
@@ -230,11 +215,21 @@ df2 <- left_join(df2,x ,by="ID")
 df2 <- df2 %>% 
   mutate(accuracy = sumResponse/freq) 
 
+#I should add the accuracy column to the df_res_sub
 
-ggplot(df2, aes(x = accuracy)) +
+#first i remove the columns in df2 that I don't need in the df_res_sub 
+df2$sumResponse <- NULL
+df2$freq<- NULL
+
+#I merge the two data frames
+df_res_sub$ID <- as.factor(df_res_sub$ID)
+df2$ID <- as.factor(df2$ID)
+df_res_sub<- left_join(df_res_sub, df2, by = "ID")
+
+
+ggplot(df_res_sub, aes(x = accuracy)) +
   geom_histogram(aes(y=..density..),binwidth=0.008)+
-  stat_function(fun = dnorm,args = list(mean = mean(df2$accuracy, na.rm = TRUE), sd = sd(df2$accuracy, na.rm = TRUE)), colour = "darkgreen", size = 1)
-
+  stat_function(fun = dnorm,args = list(mean = mean(df_res_sub$accuracy, na.rm = TRUE), sd = sd(df_res_sub$accuracy, na.rm = TRUE)), colour = "darkgreen", size = 1)
 
 
 
@@ -270,7 +265,7 @@ df1 = aggregate(df_plot_summary,
                 na.rm = TRUE)
 
 #df1$confidence_bin_fact <- NULL
-#df1$ID <- NUll
+#df1$ID <- NULL
 
 df1 = rename(df1, c("Group.1" = "ID", "Group.2" = "confidence_bin"))
 
@@ -370,6 +365,68 @@ ggplot(df3, aes(x = criterion)) +
 
 ggplot(df_res_sub, aes(x = dPrime)) +
   geom_histogram(aes(y=..density..),binwidth=0.05)+
-  stat_function(fun = dnorm,args = list(mean = mean(df_res_sub$dPrime, na.rm = TRUE), sd = sd(df_res_sub$dPrime, na.rm = TRUE)), colour = "darkgreen", size = 1)
+  stat_function(fun = dnorm,args = list(mean = mean(df_res_sub$dPrime, na.rm = TRUE), sd = sd(df_res_sub$dPrime, na.rm = TRUE)), colour = "darkgreen", size = 1)+
+  labs(title = "RRST dPrime")
+```
+
+```{r}
+#what is metaD?
+ggplot(df_res_sub, aes(x = metaD)) +
+  geom_histogram(aes(y=..density..),binwidth=0.05)+
+  stat_function(fun = dnorm,args = list(mean = mean(df_res_sub$metaD, na.rm = TRUE), sd = sd(df_res_sub$metaD, na.rm = TRUE)), colour = "darkgreen", size = 1)+
+  labs(title = "RRST metaD")
+
+#what is mRatio
+ggplot(df_res_sub, aes(x = mRatio)) +
+  geom_histogram(aes(y=..density..),binwidth=0.05)+
+  stat_function(fun = dnorm,args = list(mean = mean(df_res_sub$mRatio, na.rm = TRUE), sd = sd(df_res_sub$mRatio, na.rm = TRUE)), colour = "darkgreen", size = 1)+
+  labs(title = "RRST mRatio")
+#well that is a usefull plot
+```
+
+```{r}
+##Outlier detection 
+# The MAD can be easily calculated in the software R as well by utilizing the command “Mad” available in the package “Stats”. Note that this command assumes by default that b = 1.4826.
+
+library("stats")
+df_res_sub$accuracy <- as.numeric(df_res_sub$accuracy)
+mad(df_res_sub$accuracy, constant = 1.4826, na.rm = TRUE,
+    low = FALSE, high = FALSE)
+
+df_res_sub <- df_res_sub %>% 
+  filter(accuracy < 3*mad(accuracy, constant = 1.4826, na.rm = TRUE,
+    low = FALSE, high = FALSE))
+
+ggplot(df_res_sub, aes(x = accuracy)) +
+  geom_histogram(aes(y=..density..),binwidth=0.008)+
+  stat_function(fun = dnorm,args = list(mean = mean(df_res_sub$accuracy, na.rm = TRUE), sd = sd(df_res_sub$accuracy, na.rm = TRUE)), colour = "darkgreen", size = 1)
+
+###Filter stuff
+#Should i then filter the data to only include slopes less than 3 sd from the mean
+df_res_sub <-df_res_sub %>% 
+  filter(psi_slope_log < 3*sd(psi_slope_log, na.rm = T))
+
+
+ggplot(df_res_sub, aes(x = psi_slope_log)) +
+  geom_histogram(aes(y=..density..),binwidth=0.25)+
+  stat_function(fun = dnorm,args = list(mean = mean(df_res_sub$psi_slope_log, na.rm = TRUE), sd = sd(df_res_sub$psi_slope_log, na.rm = TRUE)), colour = "darkgreen", size = 1)
+
+#Should i then filter the data to only include slopes less than 3 sd from the mean (It changes nothing in this case)
+df_res_trial <-df_res_trial %>% 
+  filter(RT_log < 3*sd(RT_log, na.rm = T))
+
+ggplot(df_res_trial, aes(x = RT_log)) +
+  geom_histogram(aes(y=..density..),binwidth=0.15)+
+  stat_function(fun = dnorm,args = list(mean = mean(df_res_trial$RT_log, na.rm = TRUE), sd = sd(df_res_trial$RT_log, na.rm = TRUE)), colour = "darkgreen", size = 1)
+
+```
+
+
+```{r}
+#Replicating plots from Sarah Garfinkel 
+
+
+ggplot(df_res_sub, aes(x = confidence_mean, y = accuracy)) +
+  geom_point()
 ```
 

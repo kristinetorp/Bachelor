@@ -10,7 +10,7 @@ knitr::opts_chunk$set(echo = TRUE)
 #Reading packages 
 pacman::p_load("tidyverse", "stringr", "dplyr", "plyr", "ggdist")
 ```
-
+This markdown is pretty useless - since I have all of the analysis in the cleaning file! 
 .
 ```{r}
 #Loading data 
@@ -30,10 +30,16 @@ df_cardio <- df_cardio %>%
 
 #I should only keep interoceptive trials and Base HRD trials 
 # that should solve my problems 
+df_cardio <- df_cardio %>% 
+  filter(task == "BaseHRD") %>% 
+  filter(modality == "Intero")
+
+#remove unnecessary columns 
+df_cardio$breath_condition <- NULL
+df_cardio$participant_id<- NULL
 
 #merge this dataframe with the RRST_DEMO  DID NOT WORK! - because I have no Idea, what is going on in the df_cardio :-) 
-# df_res_sub$ID <- as.factor(df_res_sub$ID)
-# 
-# df_all <- merge(df_res_sub,df_cardio ,by="ID")
+
+df_all <- left_join(df_res_sub,df_cardio ,by="ID")
 
 ```

@@ -66,7 +66,7 @@ pca1 <- princomp(na.omit(df_anxiety), scores = TRUE, cor = TRUE)
 summary(pca1) #looking at this summary I might have five components 
 #- Look for eigen values above 1 - means they explain at least as much variance as the actual variable
 
-loadings(pca1) #we want to see low loading on the components 
+loadings(pca1) #we want to see low loadings on the components 
 
 plot(pca1)
 
@@ -80,6 +80,9 @@ biplot(pca1)
 #Running a parallel test (Horn's) -## why am I doing this??
 parallel <- fa.parallel(df_anxiety, fm ="minres", fa ="fa", sim = FALSE)
 # I think this plot shows that I need 3 factors
+
+
+pca1$scores
 ```
 
 
@@ -197,4 +200,7 @@ fa.diagram(fa.out)
 # 3. Close the file
 dev.off()
 ```
+
+
+
 

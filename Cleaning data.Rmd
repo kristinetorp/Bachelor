@@ -14,21 +14,25 @@ knitr::opts_chunk$set(echo = TRUE)
 pacman::p_load("tidyverse", "stringr", "dplyr", "plyr")
 ```
 
-
+##DEMOGRAPHICS 
 ```{r}
-#loading the subject level data including metacognitive scores 
+#LOADING DEMOGRAPHIC DATA 
 
-df_subject <- read_csv("RRST_VMP_SubjectData_jointtable.csv")
+#loading the demographic data
+df_demo<- read_csv("demographicsNew.csv")
 
-#loading the trail level data 
-df_trial <- read_csv("RRST_VMP_TrialLevelData_28-Oct-2021_12-29.csv")
+#Cleaning the demographic data 
+df_demo <- df_demo %>% relocate(stormdb, .before = language_pre)
 
-df_demo<- read_csv("demographics.csv") 
+#rename an ID column 
 
-#remove Nas - the data goes from 250 to 227 when removing participants with no ID
+df_demo <- rename(df_demo,c("stormdb" = "ID"))
+
+#remove Nas from the demographic data - the data goes from 330 to  when removing participants with no ID
 
 df_demo <- df_demo %>%
-  drop_na(stormdb)
+  drop_na(ID)
+#wuhuuu there were no NA's 
 
 
 #rename an ID column 
@@ -37,94 +41,157 @@ df_demo <- rename(df_demo,c("stormdb" = "ID"))
 
 #Remove the zero infront of every ID
 df_demo$ID <- as.numeric(df_demo$ID)
+
+#remove Nas from the demographic data - the data goes from 330 to  when removing participants with no ID
+
+df_demo <- df_demo %>%
+  drop_na(ID)
+#wuhuuu there were only 1 NA in the data  
 df_demo$ID <- as.factor(df_demo$ID)
 
+#I remove a participant with an unreasonable participant number (51493)
 
-#Merge df_demo and df_subject by ID 
-df_subject$ID <- as.factor(df_subject$ID)
+df_demo <- df_demo %>% 
+  filter(ID != "51493")
 
-df_RRST_sub <- left_join(df_demo,df_subject ,by="ID")
 
+#cleaning columns 
 #merge columns that says name and name_eng
 
 #Gender 
-df_RRST_sub$gender[is.na(df_RRST_sub$gender)] <- df_RRST_sub$gender_eng[is.na(df_RRST_sub$gender)]
+df_demo$gender[is.na(df_demo$gender)] <- df_demo$gender_eng[is.na(df_demo$gender)]
 #Age
-df_RRST_sub$age[is.na(df_RRST_sub$age)] <- df_RRST_sub$age_eng[is.na(df_RRST_sub$age)]
+df_demo$age[is.na(df_demo$age)] <- df_demo$age_eng[is.na(df_demo$age)]
 #Bmi
-df_RRST_sub$bmi[is.na(df_RRST_sub$bmi)] <- df_RRST_sub$bmi_eng[is.na(df_RRST_sub$bmi)]
+df_demo$bmi[is.na(df_demo$bmi)] <- df_demo$bmi_eng[is.na(df_demo$bmi)]
 #Height
-df_RRST_sub$height[is.na(df_RRST_sub$height)] <- df_RRST_sub$height_eng[is.na(df_RRST_sub$height)]
+df_demo$height[is.na(df_demo$height)] <- df_demo$height_eng[is.na(df_demo$height)]
 #Handedness
-df_RRST_sub$handedness[is.na(df_RRST_sub$handedness)] <- df_RRST_sub$handedness_eng[is.na(df_RRST_sub$handedness)]
+df_demo$handedness[is.na(df_demo$handedness)] <- df_demo$handedness_eng[is.na(df_demo$handedness)]
 #Smoking
-df_RRST_sub$smoking[is.na(df_RRST_sub$smoking)] <- df_RRST_sub$smoking_eng[is.na(df_RRST_sub$smoking)]
+df_demo$smoking[is.na(df_demo$smoking)] <- df_demo$smoking_eng[is.na(df_demo$smoking)]
 #Mental illness
-df_RRST_sub$mental_illness[is.na(df_RRST_sub$mental_illness)] <- df_RRST_sub$mental_illness_eng[is.na(df_RRST_sub$mental_illness)]
+df_demo$mental_illness[is.na(df_demo$mental_illness)] <- df_demo$mental_illness_eng[is.na(df_demo$mental_illness)]
 #Mental illness yes 
-df_RRST_sub$mental_illness_yes[is.na(df_RRST_sub$mental_illness_yes)] <- df_RRST_sub$mental_illness_yes_eng[is.na(df_RRST_sub$mental_illness_yes)]
+df_demo$mental_illness_yes[is.na(df_demo$mental_illness_yes)] <- df_demo$mental_illness_yes_eng[is.na(df_demo$mental_illness_yes)]
+#weight 
+df_demo$weight[is.na(df_demo$weight)] <- df_demo$weight_eng[is.na(df_demo$weight)]
+#breath nose mouth
+df_demo$breathe_nose_mouth[is.na(df_demo$breathe_nose_mouth)] <- df_demo$breathe_nose_mouth_eng[is.na(df_demo$breathe_nose_mouth)]
+#winter bathing 
+df_demo$winter_bathing[is.na(df_demo$winter_bathing)] <- df_demo$winter_bathing_eng[is.na(df_demo$winter_bathing)]
+#sauna
+df_demo$sauna[is.na(df_demo$sauna)] <- df_demo$sauna_eng[is.na(df_demo$sauna)]
 
-#I rename the dataframe because I have some old code I might as well just use 
-
-demo <- df_RRST_sub
-
+#collapsing these columns as well so I dont have a columns for english speaking participants and another column for danish speaking participants 
 #stai 21-40 Y2
-demo$stai_21[is.na(demo$stai_21)] <- demo$stai_21_eng[is.na(demo$stai_21)]
-demo$stai_22[is.na(demo$stai_22)] <- demo$stai_22_eng[is.na(demo$stai_22)]
-demo$stai_23[is.na(demo$stai_23)] <- demo$stai_23_eng[is.na(demo$stai_23)]
-demo$stai_24[is.na(demo$stai_24)] <- demo$stai_24_eng[is.na(demo$stai_24)]
-demo$stai_25[is.na(demo$stai_25)] <- demo$stai_25_eng[is.na(demo$stai_25)]
-demo$stai_26[is.na(demo$stai_26)] <- demo$stai_26_eng[is.na(demo$stai_26)]
-demo$stai_27[is.na(demo$stai_27)] <- demo$stai_27_eng[is.na(demo$stai_27)]
-demo$stai_28[is.na(demo$stai_28)] <- demo$stai_28_eng[is.na(demo$stai_28)]
-demo$stai_29[is.na(demo$stai_29)] <- demo$stai_29_eng[is.na(demo$stai_29)]
-demo$stai_30[is.na(demo$stai_30)] <- demo$stai_30_eng[is.na(demo$stai_30)]
-demo$stai_31[is.na(demo$stai_31)] <- demo$stai_31_eng[is.na(demo$stai_31)]
-demo$stai_32[is.na(demo$stai_32)] <- demo$stai_32_eng[is.na(demo$stai_32)]
-demo$stai_33[is.na(demo$stai_33)] <- demo$stai_33_eng[is.na(demo$stai_33)]
-demo$stai_34[is.na(demo$stai_34)] <- demo$stai_34_eng[is.na(demo$stai_34)]
-demo$stai_35[is.na(demo$stai_35)] <- demo$stai_35_eng[is.na(demo$stai_35)]
-demo$stai_36[is.na(demo$stai_36)] <- demo$stai_36_eng[is.na(demo$stai_36)]
-demo$stai_37[is.na(demo$stai_37)] <- demo$stai_37_eng[is.na(demo$stai_37)]
-demo$stai_38[is.na(demo$stai_38)] <- demo$stai_38_eng[is.na(demo$stai_38)]
-demo$stai_39[is.na(demo$stai_39)] <- demo$stai_39_eng[is.na(demo$stai_39)]
-demo$stai_40[is.na(demo$stai_40)] <- demo$stai_40_eng[is.na(demo$stai_40)]
+df_demo$stai_21[is.na(df_demo$stai_21)] <- df_demo$stai_21_eng[is.na(df_demo$stai_21)]
+df_demo$stai_22[is.na(df_demo$stai_22)] <- df_demo$stai_22_eng[is.na(df_demo$stai_22)]
+df_demo$stai_23[is.na(df_demo$stai_23)] <- df_demo$stai_23_eng[is.na(df_demo$stai_23)]
+df_demo$stai_24[is.na(df_demo$stai_24)] <- df_demo$stai_24_eng[is.na(df_demo$stai_24)]
+df_demo$stai_25[is.na(df_demo$stai_25)] <- df_demo$stai_25_eng[is.na(df_demo$stai_25)]
+df_demo$stai_26[is.na(df_demo$stai_26)] <- df_demo$stai_26_eng[is.na(df_demo$stai_26)]
+df_demo$stai_27[is.na(df_demo$stai_27)] <- df_demo$stai_27_eng[is.na(df_demo$stai_27)]
+df_demo$stai_28[is.na(df_demo$stai_28)] <- df_demo$stai_28_eng[is.na(df_demo$stai_28)]
+df_demo$stai_29[is.na(df_demo$stai_29)] <- df_demo$stai_29_eng[is.na(df_demo$stai_29)]
+df_demo$stai_30[is.na(df_demo$stai_30)] <- df_demo$stai_30_eng[is.na(df_demo$stai_30)]
+df_demo$stai_31[is.na(df_demo$stai_31)] <- df_demo$stai_31_eng[is.na(df_demo$stai_31)]
+df_demo$stai_32[is.na(df_demo$stai_32)] <- df_demo$stai_32_eng[is.na(df_demo$stai_32)]
+df_demo$stai_33[is.na(df_demo$stai_33)] <- df_demo$stai_33_eng[is.na(df_demo$stai_33)]
+df_demo$stai_34[is.na(df_demo$stai_34)] <- df_demo$stai_34_eng[is.na(df_demo$stai_34)]
+df_demo$stai_35[is.na(df_demo$stai_35)] <- df_demo$stai_35_eng[is.na(df_demo$stai_35)]
+df_demo$stai_36[is.na(df_demo$stai_36)] <- df_demo$stai_36_eng[is.na(df_demo$stai_36)]
+df_demo$stai_37[is.na(df_demo$stai_37)] <- df_demo$stai_37_eng[is.na(df_demo$stai_37)]
+df_demo$stai_38[is.na(df_demo$stai_38)] <- df_demo$stai_38_eng[is.na(df_demo$stai_38)]
+df_demo$stai_39[is.na(df_demo$stai_39)] <- df_demo$stai_39_eng[is.na(df_demo$stai_39)]
+df_demo$stai_40[is.na(df_demo$stai_40)] <- df_demo$stai_40_eng[is.na(df_demo$stai_40)]
 
 
 #sticsa
-demo$sticsa_gm_1[is.na(demo$sticsa_gm_1)] <- demo$sticsa_gm_1_eng[is.na(demo$sticsa_gm_1)]
-demo$sticsa_gm_2[is.na(demo$sticsa_gm_2)] <- demo$sticsa_gm_2_eng[is.na(demo$sticsa_gm_2)]
-demo$sticsa_gm_3[is.na(demo$sticsa_gm_3)] <- demo$sticsa_gm_3_eng[is.na(demo$sticsa_gm_3)]
-demo$sticsa_gm_4[is.na(demo$sticsa_gm_4)] <- demo$sticsa_gm_4_eng[is.na(demo$sticsa_gm_4)]
-demo$sticsa_gm_5[is.na(demo$sticsa_gm_5)] <- demo$sticsa_gm_5_eng[is.na(demo$sticsa_gm_5)]
-demo$sticsa_gm_6[is.na(demo$sticsa_gm_6)] <- demo$sticsa_gm_6_eng[is.na(demo$sticsa_gm_6)]
-demo$sticsa_gm_7[is.na(demo$sticsa_gm_7)] <- demo$sticsa_gm_7_eng[is.na(demo$sticsa_gm_7)]
-demo$sticsa_gm_8[is.na(demo$sticsa_gm_8)] <- demo$sticsa_gm_8_eng[is.na(demo$sticsa_gm_8)]
-demo$sticsa_gm_9[is.na(demo$sticsa_gm_9)] <- demo$sticsa_gm_9_eng[is.na(demo$sticsa_gm_9)]
-demo$sticsa_gm_10[is.na(demo$sticsa_gm_10)] <- demo$sticsa_gm_10_eng[is.na(demo$sticsa_gm_10)]
-demo$sticsa_gm_11[is.na(demo$sticsa_gm_11)] <- demo$sticsa_gm_11_eng[is.na(demo$sticsa_gm_11)]
-demo$sticsa_gm_12[is.na(demo$sticsa_gm_12)] <- demo$sticsa_gm_12_eng[is.na(demo$sticsa_gm_12)]
-demo$sticsa_gm_13[is.na(demo$sticsa_gm_13)] <- demo$sticsa_gm_13_eng[is.na(demo$sticsa_gm_13)]
-demo$sticsa_gm_14[is.na(demo$sticsa_gm_14)] <- demo$sticsa_gm_14_eng[is.na(demo$sticsa_gm_14)]
-demo$sticsa_gm_15[is.na(demo$sticsa_gm_15)] <- demo$sticsa_gm_15_eng[is.na(demo$sticsa_gm_15)]
-demo$sticsa_gm_16[is.na(demo$sticsa_gm_16)] <- demo$sticsa_gm_16_eng[is.na(demo$sticsa_gm_16)]
-demo$sticsa_gm_17[is.na(demo$sticsa_gm_17)] <- demo$sticsa_gm_17_eng[is.na(demo$sticsa_gm_17)]
-demo$sticsa_gm_18[is.na(demo$sticsa_gm_18)] <- demo$sticsa_gm_18_eng[is.na(demo$sticsa_gm_18)]
-demo$sticsa_gm_19[is.na(demo$sticsa_gm_19)] <- demo$sticsa_gm_19_eng[is.na(demo$sticsa_gm_19)]
-demo$sticsa_gm_20[is.na(demo$sticsa_gm_20)] <- demo$sticsa_gm_20_eng[is.na(demo$sticsa_gm_20)]
-demo$sticsa_gm_21[is.na(demo$sticsa_gm_21)] <- demo$sticsa_gm_21_eng[is.na(demo$sticsa_gm_21)]
+df_demo$sticsa_gm_1[is.na(df_demo$sticsa_gm_1)] <- df_demo$sticsa_gm_1_eng[is.na(df_demo$sticsa_gm_1)]
+df_demo$sticsa_gm_2[is.na(df_demo$sticsa_gm_2)] <- df_demo$sticsa_gm_2_eng[is.na(df_demo$sticsa_gm_2)]
+df_demo$sticsa_gm_3[is.na(df_demo$sticsa_gm_3)] <- df_demo$sticsa_gm_3_eng[is.na(df_demo$sticsa_gm_3)]
+df_demo$sticsa_gm_4[is.na(df_demo$sticsa_gm_4)] <- df_demo$sticsa_gm_4_eng[is.na(df_demo$sticsa_gm_4)]
+df_demo$sticsa_gm_5[is.na(df_demo$sticsa_gm_5)] <- df_demo$sticsa_gm_5_eng[is.na(df_demo$sticsa_gm_5)]
+df_demo$sticsa_gm_6[is.na(df_demo$sticsa_gm_6)] <- df_demo$sticsa_gm_6_eng[is.na(df_demo$sticsa_gm_6)]
+df_demo$sticsa_gm_7[is.na(df_demo$sticsa_gm_7)] <- df_demo$sticsa_gm_7_eng[is.na(df_demo$sticsa_gm_7)]
+df_demo$sticsa_gm_8[is.na(df_demo$sticsa_gm_8)] <- df_demo$sticsa_gm_8_eng[is.na(df_demo$sticsa_gm_8)]
+df_demo$sticsa_gm_9[is.na(df_demo$sticsa_gm_9)] <- df_demo$sticsa_gm_9_eng[is.na(df_demo$sticsa_gm_9)]
+df_demo$sticsa_gm_10[is.na(df_demo$sticsa_gm_10)] <- df_demo$sticsa_gm_10_eng[is.na(df_demo$sticsa_gm_10)]
+df_demo$sticsa_gm_11[is.na(df_demo$sticsa_gm_11)] <- df_demo$sticsa_gm_11_eng[is.na(df_demo$sticsa_gm_11)]
+df_demo$sticsa_gm_12[is.na(df_demo$sticsa_gm_12)] <- df_demo$sticsa_gm_12_eng[is.na(df_demo$sticsa_gm_12)]
+df_demo$sticsa_gm_13[is.na(df_demo$sticsa_gm_13)] <- df_demo$sticsa_gm_13_eng[is.na(df_demo$sticsa_gm_13)]
+df_demo$sticsa_gm_14[is.na(df_demo$sticsa_gm_14)] <- df_demo$sticsa_gm_14_eng[is.na(df_demo$sticsa_gm_14)]
+df_demo$sticsa_gm_15[is.na(df_demo$sticsa_gm_15)] <- df_demo$sticsa_gm_15_eng[is.na(df_demo$sticsa_gm_15)]
+df_demo$sticsa_gm_16[is.na(df_demo$sticsa_gm_16)] <- df_demo$sticsa_gm_16_eng[is.na(df_demo$sticsa_gm_16)]
+df_demo$sticsa_gm_17[is.na(df_demo$sticsa_gm_17)] <- df_demo$sticsa_gm_17_eng[is.na(df_demo$sticsa_gm_17)]
+df_demo$sticsa_gm_18[is.na(df_demo$sticsa_gm_18)] <- df_demo$sticsa_gm_18_eng[is.na(df_demo$sticsa_gm_18)]
+df_demo$sticsa_gm_19[is.na(df_demo$sticsa_gm_19)] <- df_demo$sticsa_gm_19_eng[is.na(df_demo$sticsa_gm_19)]
+df_demo$sticsa_gm_20[is.na(df_demo$sticsa_gm_20)] <- df_demo$sticsa_gm_20_eng[is.na(df_demo$sticsa_gm_20)]
+df_demo$sticsa_gm_21[is.na(df_demo$sticsa_gm_21)] <- df_demo$sticsa_gm_21_eng[is.na(df_demo$sticsa_gm_21)]
 
-#I bring my old dataframe (name) back
+#phq15
+df_demo$phq15_1[is.na(df_demo$phq15_1)] <- df_demo$phq15_1_eng[is.na(df_demo$phq15_1)]
+df_demo$phq15_2[is.na(df_demo$phq15_2)] <- df_demo$phq15_2_eng[is.na(df_demo$phq15_2)]
+df_demo$phq15_3[is.na(df_demo$phq15_3)] <- df_demo$phq15_3_eng[is.na(df_demo$phq15_3)]
+df_demo$phq15_4[is.na(df_demo$phq15_4)] <- df_demo$phq15_4_eng[is.na(df_demo$phq15_4)]
+df_demo$phq15_5[is.na(df_demo$phq15_5)] <- df_demo$phq15_5_eng[is.na(df_demo$phq15_5)]
+df_demo$phq15_6[is.na(df_demo$phq15_6)] <- df_demo$phq15_6_eng[is.na(df_demo$phq15_6)]
+df_demo$phq15_7[is.na(df_demo$phq15_7)] <- df_demo$phq15_7_eng[is.na(df_demo$phq15_7)]
+df_demo$phq15_8[is.na(df_demo$phq15_8)] <- df_demo$phq15_8_eng[is.na(df_demo$phq15_8)]
+df_demo$phq15_9[is.na(df_demo$phq15_9)] <- df_demo$phq15_9_eng[is.na(df_demo$phq15_9)]
+df_demo$phq15_10[is.na(df_demo$phq15_10)] <- df_demo$phq15_10_eng[is.na(df_demo$phq15_10)]
+df_demo$phq15_11[is.na(df_demo$phq15_11)] <- df_demo$phq15_11_eng[is.na(df_demo$phq15_11)]
+df_demo$phq15_12[is.na(df_demo$phq15_12)] <- df_demo$phq15_12_eng[is.na(df_demo$phq15_12)]
+df_demo$phq15_13[is.na(df_demo$phq15_13)] <- df_demo$phq15_13_eng[is.na(df_demo$phq15_13)]
+df_demo$phq15_14[is.na(df_demo$phq15_14)] <- df_demo$phq15_14_eng[is.na(df_demo$phq15_14)]
+df_demo$phq15_15[is.na(df_demo$phq15_15)] <- df_demo$phq15_15_eng[is.na(df_demo$phq15_15)]
 
-df_RRST_sub <- demo
 
-#Select columns i want for my combined dataframe. 
 
-df_RRST_sub <- df_RRST_sub %>%
+#MAIA
+df_demo$maia_1[is.na(df_demo$maia_1)] <- df_demo$maia_1_eng[is.na(df_demo$maia_1)]
+df_demo$maia_2[is.na(df_demo$maia_2)] <- df_demo$maia_2_eng[is.na(df_demo$maia_2)]
+df_demo$maia_3[is.na(df_demo$maia_3)] <- df_demo$maia_3_eng[is.na(df_demo$maia_3)]
+df_demo$maia_4[is.na(df_demo$maia_4)] <- df_demo$maia_4_eng[is.na(df_demo$maia_4)]
+df_demo$maia_5[is.na(df_demo$maia_5)] <- df_demo$maia_5_eng[is.na(df_demo$maia_5)]
+df_demo$maia_6[is.na(df_demo$maia_6)] <- df_demo$maia_6_eng[is.na(df_demo$maia_6)]
+df_demo$maia_7[is.na(df_demo$maia_7)] <- df_demo$maia_7_eng[is.na(df_demo$maia_7)]
+df_demo$maia_8[is.na(df_demo$maia_8)] <- df_demo$maia_8_eng[is.na(df_demo$maia_8)]
+df_demo$maia_9[is.na(df_demo$maia_9)] <- df_demo$maia_9_eng[is.na(df_demo$maia_9)]
+df_demo$maia_10[is.na(df_demo$maia_10)] <- df_demo$maia_10_eng[is.na(df_demo$maia_10)]
+df_demo$maia_11[is.na(df_demo$maia_11)] <- df_demo$maia_11_eng[is.na(df_demo$maia_11)]
+df_demo$maia_12[is.na(df_demo$maia_12)] <- df_demo$maia_12_eng[is.na(df_demo$maia_12)]
+df_demo$maia_13[is.na(df_demo$maia_13)] <- df_demo$maia_13_eng[is.na(df_demo$maia_13)]
+df_demo$maia_14[is.na(df_demo$maia_14)] <- df_demo$maia_14_eng[is.na(df_demo$maia_14)]
+df_demo$maia_15[is.na(df_demo$maia_15)] <- df_demo$maia_15_eng[is.na(df_demo$maia_15)]
+df_demo$maia_16[is.na(df_demo$maia_16)] <- df_demo$maia_16_eng[is.na(df_demo$maia_16)]
+df_demo$maia_17[is.na(df_demo$maia_17)] <- df_demo$maia_17_eng[is.na(df_demo$maia_17)]
+df_demo$maia_18[is.na(df_demo$maia_18)] <- df_demo$maia_18_eng[is.na(df_demo$maia_18)]
+df_demo$maia_19[is.na(df_demo$maia_19)] <- df_demo$maia_19_eng[is.na(df_demo$maia_19)]
+df_demo$maia_20[is.na(df_demo$maia_20)] <- df_demo$maia_20_eng[is.na(df_demo$maia_20)]
+df_demo$maia_21[is.na(df_demo$maia_21)] <- df_demo$maia_21_eng[is.na(df_demo$maia_21)]
+df_demo$maia_22[is.na(df_demo$maia_22)] <- df_demo$maia_22_eng[is.na(df_demo$maia_22)]
+df_demo$maia_23[is.na(df_demo$maia_23)] <- df_demo$maia_23_eng[is.na(df_demo$maia_23)]
+df_demo$maia_24[is.na(df_demo$maia_24)] <- df_demo$maia_24_eng[is.na(df_demo$maia_24)]
+df_demo$maia_25[is.na(df_demo$maia_25)] <- df_demo$maia_25_eng[is.na(df_demo$maia_25)]
+df_demo$maia_26[is.na(df_demo$maia_26)] <- df_demo$maia_26_eng[is.na(df_demo$maia_26)]
+df_demo$maia_27[is.na(df_demo$maia_27)] <- df_demo$maia_27_eng[is.na(df_demo$maia_27)]
+df_demo$maia_28[is.na(df_demo$maia_28)] <- df_demo$maia_28_eng[is.na(df_demo$maia_28)]
+df_demo$maia_29[is.na(df_demo$maia_29)] <- df_demo$maia_29_eng[is.na(df_demo$maia_29)]
+df_demo$maia_30[is.na(df_demo$maia_30)] <- df_demo$maia_30_eng[is.na(df_demo$maia_30)]
+df_demo$maia_31[is.na(df_demo$maia_31)] <- df_demo$maia_31_eng[is.na(df_demo$maia_31)]
+df_demo$maia_32[is.na(df_demo$maia_32)] <- df_demo$maia_32_eng[is.na(df_demo$maia_32)]
+
+
+
+#now I create a dataframe with the columns that entail information on all participants
+
+df_demo <- df_demo %>%
   dplyr::select(
     ID,
     gender,
-    language_surveys,
+    language_pre,
     age,
     bmi,
     height,
@@ -132,75 +199,1157 @@ df_RRST_sub <- df_RRST_sub %>%
     smoking,
     mental_illness,
     mental_illness_yes,
-    matches("psi_\\w*"),
+    sauna,
+    winter_bathing,
+    breathe_nose_mouth,
+    weight,
+    matches("psi_\\w"),
     matches("stai_\\d\\d$"),
-    matches("sticsa_gm_\\d\\d$"),
-    starts_with("dis"),
-    dPrime,
-    metaD,
-    mRatio,
-    aRoc,
+    matches("sticsa_gm_\\d*$"),
+    matches("phq15_\\d*$"),
+    matches("maia_\\d*$")
      )
 
+#checking for duplicate ID's 
+duplicated(df_demo$ID)
 
-#I know have a dataframe with subject level RRST measures as well as their demographic information and anxiety questionaire scores. 
+df_demo[duplicated(df_demo$ID), ]
 
-write_csv(df_RRST_sub,"RRST_DEMO.csv")
+df_demo <- df_demo[!duplicated(df_demo$ID), ]
 
-#MAKE A DATA FRAME WITH ANSWERS FROM STAI AND STICSA to use for factor analysis. 
+#removed to duplicated IDs
 
-df_anxiety <- df_RRST_sub %>% 
+write_csv(df_demo,"df_demo.csv")
+
+```
+
+##RRST
+```{r}
+#Loading the subject level RRST data 
+df_res_subject <- read_csv("RRST_VMP_SubjectData_jointtable.csv")
+df_res_subject$X1 <- NULL
+
+df_res_subject$ID <- as.factor(df_res_subject$ID)
+
+
+#load list of partcipnats which staircase did not converge 
+df_res_remove <- read_csv("rrst_badsubs_19-nov-2021.csv")
+df_res_remove$ID <- as.factor(df_res_remove$ID)
+df_res_remove <- df_res_remove %>% 
+  filter(badTotal == "3")
+
+#Remove participants for whom the staircase did not converge 
+list_id <- unique(df_res_remove$ID, na.rm = TRUE)
+df_res_subject <- df_res_subject %>% 
+  filter(! ID %in% list_id)
+#This stepped removed 46 participants from 301 to 255
+
+df_res_subject <- df_res_subject %>%
+  drop_na(ID)
+#There were no NA's in the ID column 
+
+#I rename the columns to include task name 
+df_res_subject <- rename(df_res_subject,c("psi_thresh" = "psi_threshold_RRST", "psi_slope" = "psi_slope_RRST", "dPrime" = "dPrime_RRST", "metaD" = "metaD_RRST", "mRatio" = "mRatio_RRST", "aRoc" ="aRoc_RRST"))
+
+#I add confidence columns because they will be usefull later 
+#Confidence 
+#First I must create a confidence column based on trial level data 
+#load the trial level RRST data
+df_res_trial <- read_csv("RRST_VMP_TrialLevelData_28-Oct-2021_12-29.csv")
+df_res_trial <- df_res_trial %>%
+  drop_na(confidence)
+#make a small df with mean and median confidence for the RRST subjects 
+df_confidence_mean <-  aggregate(x = df_res_trial$confidence, 
+          by = list(df_res_trial$ID),
+          FUN = mean,
+          na.rm = T)
+df_confidence_mean <- rename(df_confidence_mean, c("Group.1" = "ID", "x" = "confidence_mean_RRST"))
+df_confidence_mean$ID <- as.factor(df_confidence_mean$ID)
+
+df_confidence_median <- aggregate(x = df_res_trial$confidence, 
+          by = list(df_res_trial$ID),
+          FUN = median,
+          na.rm = T)
+df_confidence_median <- rename(df_confidence_median, c("Group.1" = "ID", "x" = "confidence_median_RRST"))
+df_confidence_median$ID <- as.factor(df_confidence_median$ID)
+
+#Add the mean and median confidence to the dataframe. 
+
+df_res_subject <- left_join(df_res_subject,df_confidence_mean ,by="ID")
+df_res_subject <- left_join(df_res_subject,df_confidence_median ,by="ID")
+
+#write a new csv that includes the subject level mean and median confidence. 
+
+#It should also include the log transformed slopes 
+#Log transforming the slopes
+df_res_subject <- df_res_subject %>% mutate(psi_slope_log_RRST = log(psi_slope_RRST))
+
+write_csv(df_res_subject,"df_res_subject.csv")
+
+
+
+
+```
+
+
+##HRD 
+```{r}
+#Loading the subject level HRD data
+df_car_subject <- read.csv("hrd.tsv", sep = "\t")
+
+#changing the data to be of type double 
+
+df_car_subject <- read_delim("hrd.tsv", "\t", escape_double = FALSE, 
+    col_types = cols(bayesian_meta_d = col_double(), 
+        decision_rt_mean = col_double(), 
+        decision_rt_median = col_double(), 
+        confidence_mean = col_double(), confidence_median = col_double(), 
+        confidence_rt_mean = col_double(), 
+        confidence_rt_median = col_double(), 
+        psi_threshold = col_double(), psi_slope = col_double(), 
+        criterion = col_double(), dprime = col_double(), 
+        mle_dprime = col_double(), mle_meta_d = col_double(), 
+        mle_m_ratio = col_double(), mle_m_diff = col_double()), 
+    trim_ws = TRUE)
+
+  df_car_subject$modality <- as.factor(df_car_subject$modality)
+  df_car_subject$task <- as.factor(df_car_subject$task)
+
+#making the dataframe wide to have one row pr participant with extero and intero conditions 
+df_car_subject <- df_car_subject  %>% 
+  filter(task == "BaseHRD") %>% #I only keep the data from the base HRD condition
+  select(-task,-breath_condition) %>%
+  select(participant_id, everything()) %>% 
+  pivot_wider(names_from = modality, values_from=(seq(3,17)), id_cols = participant_id)
+# %>%
+#   mutate(diff_threshold_hrd = psi_threshold_Intero - psi_threshold_Extero) %>% 
+#   mutate(diff_slope_hrd = psi_slope_Intero - psi_slope_Extero) %>% 
+#   mutate(diff_confidence_hrd = confidence_median_Intero - confidence_median_Extero) %>% 
+#   mutate(diff_mratio_hrd = mle_m_ratio_Intero - mle_m_ratio_Extero)
+
+
+#creating an ID column 
+df_car_subject <- df_car_subject %>% 
+  mutate(ID = str_replace_all(df_car_subject$participant_id, "\\D+", " "))
+
+#Remove the zero in front of every ID
+df_car_subject$ID <- as.numeric(df_car_subject$ID)
+df_car_subject$ID <- as.factor(df_car_subject$ID)
+
+#remove participants with no ID - there were no NA's
+df_car_subject <- df_car_subject %>%
+  drop_na(ID)
+
+
+#remove unnecessary columns 
+df_car_subject$participant_id<- NULL
+
+
+#Relocating my ID column to be the first column in the dataframe 
+df_car_subject <- df_car_subject %>% relocate(ID, .before =bayesian_meta_d_Intero)
+
+
+#write a new csv with the wide format  
+
+#It should also include the log transformed slopes 
+#Log transforming the slopes
+df_car_subject <- df_car_subject %>% mutate(psi_slope_log_Intero = log(psi_slope_Intero))
+df_car_subject <- df_car_subject %>% mutate(psi_slope_log_Extero = log(psi_slope_Extero))
+
+#should I drop partcipants who has NA's in the variables I am interested in? - It changes my observation count from 524 to 363 - I'm gonna do it. 
+library("tidyr")
+# df_car_subject <- df_car_subject %>% 
+#   drop_na(psi_threshold_Intero,psi_threshold_Extero, psi_slope_Intero, psi_slope_Extero, confidence_mean_Intero,confidence_mean_Extero, confidence_median_Intero, confidence_median_Extero, dprime_Intero, dprime_Extero, mle_m_ratio_Intero, mle_m_ratio_Extero, psi_slope_log_Intero, psi_slope_log_Extero, bayesian_meta_d_Intero, bayesian_meta_d_Extero)
+
+write_csv(df_car_subject,"df_car_subject.csv")
+
+
+```
+
+##Merge the Data frames 
+```{r}
+df_res_subject <- read_csv("df_res_subject.csv")
+df_res_subject$ID <- as.factor(df_res_subject$ID)
+df_demo <- read_csv("df_demo.csv")
+df_demo$ID <- as.factor(df_demo$ID)
+df_car_subject <- read_csv("df_car_subject.csv")
+df_car_subject$ID <- as.factor(df_car_subject$ID)
+
+
+df_all <- left_join(df_res_subject, df_demo, by = "ID")
+
+df_all <- left_join(df_all , df_car_subject, by = "ID")
+
+write_csv(df_all,"df_all.csv")
+```
+
+##Removing outliers RRST
+```{r}
+#I load the data
+
+df_all <- read_csv("df_all.csv")
+
+
+#I inspect the variables of interest to look for outliers ("exclusion criteria") 
+
+#Threshold 
+ggplot(df_all, aes(x = psi_threshold_RRST)) +
+  geom_histogram(aes(y=..density..),binwidth=0.15)+
+  stat_function(fun = dnorm,args = list(mean = mean(df_all$psi_threshold_RRST, na.rm = TRUE), sd = sd(df_all$psi_threshold_RRST, na.rm = TRUE)), colour = "darkgreen", size = 1)+
+  labs(title = "Threshold")
+
+boxplot(df_all$psi_threshold_RRST)
+
+#Slope 
+# ggplot(df_all, aes(x = psi_slope_RRST)) +
+#   geom_histogram(aes(y=..density..),binwidth=0.15)+
+#   stat_function(fun = dnorm,args = list(mean = mean(df_all$psi_slope_RRST, na.rm = TRUE), sd = sd(df_all$psi_slope_RRST, na.rm = TRUE)), colour = "darkgreen", size = 1)
+
+
+#Log Slope
+ggplot(df_all, aes(x = psi_slope_log_RRST)) +
+  geom_histogram(aes(y=..density..),binwidth=0.15)+
+  stat_function(fun = dnorm,args = list(mean = mean(df_all$psi_slope_log_RRST, na.rm = TRUE), sd = sd(df_all$psi_slope_log_RRST, na.rm = TRUE)), colour = "darkgreen", size = 1)+
+  labs(title = "Log Slope")
+
+boxplot(df_all$psi_slope_log_RRST)
+
+
+#dPrime
+ggplot(df_all, aes(x = dPrime_RRST)) +
+  geom_histogram(aes(y=..density..),binwidth=0.05)+
+  stat_function(fun = dnorm,args = list(mean = mean(df_all$dPrime_RRST, na.rm = TRUE), sd = sd(df_all$dPrime_RRST, na.rm = TRUE)), colour = "darkgreen", size = 1)+
+  labs(title = "dPrime")
+
+boxplot(df_all$dPrime_RRST)
+
+#mRatio 
+ggplot(df_all, aes(x = mRatio_RRST)) +
+  geom_histogram(aes(y=..density..),binwidth=0.15)+
+  stat_function(fun = dnorm,args = list(mean = mean(df_all$mRatio_RRST, na.rm = TRUE), sd = sd(df_all$mRatio_RRST, na.rm = TRUE)), colour = "darkgreen", size = 1)+
+  labs(title = "mRatio")
+
+boxplot(df_all$mRatio_RRST)
+
+
+#Confidence mean 
+ggplot(df_all, aes(x = confidence_mean_RRST)) +
+  geom_histogram(aes(y=..density..),binwidth=0.35)+
+  stat_function(fun = dnorm,args = list(mean = mean(df_all$confidence_mean_RRST, na.rm = TRUE), sd = sd(df_all$confidence_mean_RRST, na.rm = TRUE)), colour = "darkgreen", size = 1)+
+  labs(title = "confidence mean")
+
+boxplot(df_all$confidence_mean_RRST)
+
+#Confidence median 
+
+ggplot(df_all, aes(x = confidence_median_RRST)) +
+  geom_histogram(aes(y=..density..),binwidth=0.35)+
+  stat_function(fun = dnorm,args = list(mean = mean(df_all$confidence_median_RRST, na.rm = TRUE), sd = sd(df_all$confidence_median_RRST, na.rm = TRUE)), colour = "darkgreen", size = 1)+
+  labs(title = "confidence median")
+
+boxplot(df_all$confidence_median_RRST)
+
+
+#removing participants with unrealistic values 
+df_all <- df_all %>% 
+  filter(mRatio_RRST >-10) %>% 
+  filter(dPrime_RRST > 0.5)
+
+write_csv(df_all, "df_all.csv") #with 251 participants
+
+```
+
+##Removing outliers HRD
+
+```{r}
+#I load the data
+
+df_all <- read_csv("df_all.csv")
+
+
+#Threshold Intero
+ggplot(df_all, aes(x = psi_threshold_Intero)) +
+  geom_histogram(aes(y=..density..),binwidth=0.35)+
+  stat_function(fun = dnorm,args = list(mean = mean(df_all$psi_threshold_Intero, na.rm = TRUE), sd = sd(df_all$psi_threshold_Intero, na.rm = TRUE)), colour = "darkgreen", size = 1)+
+  labs(title = "Threshold Intero")
+
+boxplot(df_all$psi_threshold_Intero)
+
+#Threshold Extero
+ggplot(df_all, aes(x = psi_threshold_Extero)) +
+  geom_histogram(aes(y=..density..),binwidth=0.35)+
+  stat_function(fun = dnorm,args = list(mean = mean(df_all$psi_threshold_Extero, na.rm = TRUE), sd = sd(df_all$psi_threshold_Extero, na.rm = TRUE)), colour = "darkgreen", size = 1)+
+  labs(title = "Threshold Extero")
+
+boxplot(df_all$psi_threshold_Extero)
+
+#Slope Intero 
+ggplot(df_all, aes(x = psi_slope_Intero)) +
+  geom_histogram(aes(y=..density..),binwidth=0.35)+
+  stat_function(fun = dnorm,args = list(mean = mean(df_all$psi_slope_Intero, na.rm = TRUE), sd = sd(df_all$psi_slope_Intero, na.rm = TRUE)), colour = "darkgreen", size = 1)+
+  labs(title = "Slope Intero")
+
+boxplot(df_all$psi_slope_Intero)
+
+#slope Extero
+ggplot(df_all, aes(x = psi_slope_Extero)) +
+  geom_histogram(aes(y=..density..),binwidth=0.35)+
+  stat_function(fun = dnorm,args = list(mean = mean(df_all$psi_slope_Extero, na.rm = TRUE), sd = sd(df_all$psi_slope_Extero, na.rm = TRUE)), colour = "darkgreen", size = 1)+
+  labs(title = "Slope Extero")
+
+boxplot(df_all$psi_slope_Extero)
+
+
+#dprime Intero 
+ggplot(df_all, aes(x = dprime_Intero)) +
+  geom_histogram(aes(y=..density..),binwidth=0.15)+
+  stat_function(fun = dnorm,args = list(mean = mean(df_all$dprime_Intero, na.rm = TRUE), sd = sd(df_all$dprime_Intero, na.rm = TRUE)), colour = "darkgreen", size = 1)+
+  labs(title = "dPrime Intero")
+
+boxplot(df_all$dprime_Intero)
+
+#dPrime Extero
+ggplot(df_all, aes(x = dprime_Extero)) +
+  geom_histogram(aes(y=..density..),binwidth=0.35)+
+  stat_function(fun = dnorm,args = list(mean = mean(df_all$dprime_Extero, na.rm = TRUE), sd = sd(df_all$dprime_Extero, na.rm = TRUE)), colour = "darkgreen", size = 1)+
+  labs(title = "dPrime Extero")
+
+boxplot(df_all$dprime_Extero)
+
+#mRatio Intero
+ggplot(df_all, aes(x = mle_m_ratio_Intero)) +
+  geom_histogram(aes(y=..density..),binwidth=0.15)+
+  stat_function(fun = dnorm,args = list(mean = mean(df_all$mle_m_ratio_Intero, na.rm = TRUE), sd = sd(df_all$mle_m_ratio_Intero, na.rm = TRUE)), colour = "darkgreen", size = 1)+
+  labs(title = "mRatio Intero")
+
+boxplot(df_all$mle_m_ratio_Intero)
+
+#mRatio Extero
+ggplot(df_all, aes(x = mle_m_ratio_Extero)) +
+  geom_histogram(aes(y=..density..),binwidth=0.15)+
+  stat_function(fun = dnorm,args = list(mean = mean(df_all$mle_m_ratio_Extero, na.rm = TRUE), sd = sd(df_all$mle_m_ratio_Extero, na.rm = TRUE)), colour = "darkgreen", size = 1)+
+  labs(title = "mRatio Extero")
+
+boxplot(df_all$mle_m_ratio_Extero)
+
+#Confidence mean Intero
+ggplot(df_all, aes(x = confidence_mean_Intero)) +
+  geom_histogram(aes(y=..density..),binwidth=0.35)+
+  stat_function(fun = dnorm,args = list(mean = mean(df_all$confidence_mean_Intero, na.rm = TRUE), sd = sd(df_all$confidence_mean_Intero, na.rm = TRUE)), colour = "darkgreen", size = 1)+
+  labs(title = "Confidence mean Intero")
+
+boxplot(df_all$confidence_mean_Intero)
+
+#Confidence mean Extero 
+ggplot(df_all, aes(x = confidence_mean_Extero)) +
+  geom_histogram(aes(y=..density..),binwidth=0.35)+
+  stat_function(fun = dnorm,args = list(mean = mean(df_all$confidence_mean_Extero, na.rm = TRUE), sd = sd(df_all$confidence_mean_Extero, na.rm = TRUE)), colour = "darkgreen", size = 1)+
+  labs(title = "Confidence mean Extero")
+
+boxplot(df_all$confidence_mean_Extero)
+
+#removing participants with unrealistic data 
+df_all <- df_all %>% 
+  filter(ID != "460")
+
+#SOMETHING WRONG WITH THIS 
+# df_all <- df_all %>% 
+#   filter(dprime_Intero > 0.5) #drops 5 participants 
+
+
+write_csv(df_all, "df_all.csv") #250 participants
+
+```
+
+
+##FACTOR ANALYSIS 
+
+```{r}
+###PRINCIPAL COMPONENT ANLYSIS AND FACTOR ANALYSIS
+#I should do this on the data from the merged dataframe to ensure I have the data from all participants 
+
+pacman::p_load("tidyverse","tseries", "psych","GPArotation", "mvtnorm", "polycor","corpcor","GPArotation","pastecs", "corrgram", "e1071")
+
+#Make factor analysis dataframe 
+df_anxiety <- df_all %>% 
   dplyr::select(
-    ID,
     matches("s\\w*_\\d\\d?$")
     )
 
 #save csv
-write_csv(df_anxiety, "anxiety.csv") 
+write_csv(df_anxiety, "anxiety.csv")
+
+
+#Load data
+df_anxiety <- read_csv("anxiety.csv")
+
+
+#flip the scores for positive questions in stai y2
+df_anxiety$stai_21 <- car::recode(df_anxiety$stai_21, "4=1; 3=2; 2=3; 1=4")
+df_anxiety$stai_23 <- car::recode(df_anxiety$stai_23, "4=1; 3=2; 2=3; 1=4")
+df_anxiety$stai_26 <- car::recode(df_anxiety$stai_26, "4=1; 3=2; 2=3; 1=4")
+df_anxiety$stai_27 <- car::recode(df_anxiety$stai_27, "4=1; 3=2; 2=3; 1=4")
+df_anxiety$stai_30 <- car::recode(df_anxiety$stai_30, "4=1; 3=2; 2=3; 1=4")
+df_anxiety$stai_33 <- car::recode(df_anxiety$stai_33, "4=1; 3=2; 2=3; 1=4")
+df_anxiety$stai_34 <- car::recode(df_anxiety$stai_34, "4=1; 3=2; 2=3; 1=4")
+df_anxiety$stai_36 <- car::recode(df_anxiety$stai_36, "4=1; 3=2; 2=3; 1=4")
+df_anxiety$stai_39 <- car::recode(df_anxiety$stai_39, "4=1; 3=2; 2=3; 1=4")
+
+
+#checking if my data is factor analysis friendly - both tests tell me that they are. REPORT THESE
+cortest.bartlett(df_anxiety)
+KMO(df_anxiety)
+
+#The principal component analysis 
+pca1 <- princomp(na.omit(df_anxiety), scores = TRUE, cor = TRUE)
+
+parallel <- fa.parallel(df_anxiety, fm ="minres", fa ="fa", sim = FALSE)
+# I think this plot shows that I need 3 factors
+
+#factor analysis 
+fa.out <- fa(df_anxiety,nfactors = 3, fm="pa", max.iter = 100,rotate = "oblimin")
+
+#A plot showing which questions that load on each factor 
+fa.diagram(fa.out)
+
+#Add the loadings for each participant on each factor to the big data frame. 
+f1<-fa.out$scores[,1]
+f2<-fa.out$scores[,2]
+f3<-fa.out$scores[,3]
+
+scores<- data.frame(f1,f2,f3)
+
+scores <- cbind(scores, ID = df_all$ID)
+
+df_all <- left_join(df_all,scores, by = "ID" )
+
+
+write_csv(df_all, "df_final.csv")
+
 ```
 
 
 
+
+
+
+
+
+
+###Analysis Good Luck Krisso 
+Do normality checks 
 ```{r}
-#Just looking at the demographic data given to me - without considering how many of these participants i actually have RRST and HRD data on 
+#normality checks - I could use the Shapiro Wilks test but for sample sizes bigger than 50 it is better to inspect the QQ-plots visually. The shapiro wilk test punishes small outliers and deviation too hard i bigger sample sizes. https://www.r-bloggers.com/2021/04/repeated-measures-of-anova-in-r-complete-tutorial/
+
+#Load packages 
+
+library("pastecs", "MuMIn", "WRS2", "lmertest")
+
+df_all <- read_csv("df_final.csv")
+
+str(df_all)
+
+df_analysis <- df_all %>% 
+  select( 
+          psi_threshold_RRST,
+          psi_slope_log_RRST,
+          dPrime_RRST,
+          confidence_mean_RRST,
+          metaD_RRST,
+          mRatio_RRST,
+          psi_threshold_Intero,
+          psi_slope_Intero,
+          mle_dprime_Intero,
+          confidence_mean_Intero,
+          mle_meta_d_Intero,
+          mle_m_ratio_Intero,
+          psi_threshold_Extero,
+          psi_slope_Extero,
+          mle_dprime_Extero,
+          confidence_mean_Extero,
+          mle_meta_d_Extero,
+          mle_m_ratio_Extero
+          )
+#mutating variables of interest 
+ df_analysis <- df_analysis %>% 
+   mutate(
+          psi_slope_log_RRST = as.numeric(psi_slope_log_RRST),
+          psi_slope_Intero = as.numeric(psi_slope_Intero) ,
+          psi_slope_Extero = as.numeric(psi_slope_Extero),
+          psi_threshold_RRST = as.numeric(psi_threshold_RRST),
+          psi_threshold_Intero = as.numeric(psi_threshold_Intero) ,
+          psi_threshold_Extero = as.numeric(psi_threshold_Extero),
+          dPrime_RRST = as.numeric(dPrime_RRST),
+          mle_dprime_Intero = as.numeric(mle_dprime_Intero),
+          mle_dprime_Extero = as.numeric(mle_dprime_Extero),
+          confidence_mean_RRST = as.numeric(confidence_mean_RRST),
+          confidence_mean_Intero = as.numeric(confidence_mean_Intero),
+          confidence_mean_Extero = as.numeric(confidence_mean_Extero),
+          mRatio_RRST = as.numeric(mRatio_RRST),
+          mle_m_ratio_Intero = as.numeric(mle_m_ratio_Intero),
+          mle_m_ratio_Extero = as.numeric(mle_m_ratio_Extero),
+          metaD_RRST = as.numeric(metaD_RRST),
+          mle_meta_d_Intero = as.numeric(mle_meta_d_Intero),
+          mle_meta_d_Extero = as.numeric(mle_dprime_Extero)
+)
+
+#The thresholds in each task should be standardized in order to create compareble means 
+pacman::p_load("mosaic")
+
+ df_analysis<-df_analysis %>% 
+  mutate(RRST_Thresh_s = scale(psi_threshold_RRST)) %>% 
+  mutate(HRD_Thresh_s = scale(psi_threshold_Intero)) %>% 
+  mutate(Extero_Thresh_s = scale(psi_threshold_Extero))
+
+#I rename the columns to be easier for the reader to interpret 
+
+names(df_analysis)<- c( "RRST_Thresh", "RRST_Slope", "RRST_dPrime", "RRST_Conf", "RRST_metaD", "RRST_mRatio","HRD_Thresh", "HRD_Slope", "HRD_dPrime", "HRD_Conf", "HRD_metaD", "HRD_mRatio","Extero_Thresh", "Extero_Slope", "Extero_dPrime", "Extero_Conf", "Extero_metaD", "Extero_mRatio")
+
+#Distribution plots 
+ ggplot(tidyr::gather(df_analysis[1:6]), aes(value)) + 
+    geom_histogram(aes(y=..density..),binwidth = 0.25) + 
+    facet_wrap(~key, scales = "fixed")
+    
+ggplot(tidyr::gather(df_analysis[7:12]), aes(value)) + 
+    geom_histogram(aes(y=..density..),binwidth = 0.25) + 
+    facet_wrap(~key, scales = "fixed")
+
+ggplot(tidyr::gather(df_analysis[13:18]), aes(value)) + 
+   geom_histogram(aes(y=..density..),binwidth = 0.25) + 
+    facet_wrap(~key, scales = "fixed")
+
+ggplot(tidyr::gather(df_analysis[19:21]), aes(value)) + 
+   geom_histogram(aes(y=..density..),binwidth = 0.25) + 
+    facet_wrap(~key, scales = "fixed")
+
+ stat.desc(df_analysis)
+#Due to something with Nico's code we only have mle_m_ratio_intero from 200 participants 
+ 
+ 
+#Normality check - Would be better If I could allow each plot to have different scales 
+ ggplot(gather(df_analysis[1:6]), aes(sample = value))+
+   stat_qq()+
+   stat_qq_line(colour= "red")+
+   facet_wrap(~key)
+  
+ ggplot(gather(df_analysis[7:12]), aes(sample = value))+
+   stat_qq()+
+   stat_qq_line(colour= "red")+
+   facet_wrap(~key)
+ 
+  ggplot(gather(df_analysis[13:18]), aes(sample = value))+
+   stat_qq()+
+    stat_qq_line(colour = "red")+
+    facet_wrap(~key)
+
+ ggplot(gather(df_analysis[19:21]), aes(sample = value))+
+   stat_qq()+
+    stat_qq_line(colour = "red")+
+    facet_wrap(~key)
+ 
+#After inspecting the Q-Q plots I decide to inspect a box plot of the variables that look like they may have some outliers. 
+
+#First i make the data into long format 
+
+library("pastecs", "MuMIn", "WRS2", "lmertest")
+pacman::p_load("rstatix", "reshape","ggpubr", "datarium")
+
+
+df_all <- read_csv("df_final.csv")
+df_anova <- df_all %>% 
+  select( ID,
+          psi_threshold_RRST,
+          psi_slope_log_RRST,
+          dPrime_RRST,
+          confidence_mean_RRST,
+          metaD_RRST,
+          mRatio_RRST,
+          psi_threshold_Intero,
+          psi_slope_Intero,
+          mle_dprime_Intero,
+          confidence_mean_Intero,
+          mle_meta_d_Intero,
+          mle_m_ratio_Intero,
+          psi_threshold_Extero,
+          psi_slope_Extero,
+          mle_dprime_Extero,
+          confidence_mean_Extero,
+          mle_meta_d_Extero,
+          mle_m_ratio_Extero
+          )
+#mutating variables of interest 
+ df_anova <- df_anova %>% 
+   mutate(ID =as.factor(ID),
+          psi_slope_log_RRST = as.numeric(psi_slope_log_RRST),
+          psi_slope_Intero = as.numeric(psi_slope_Intero) ,
+          psi_slope_Extero = as.numeric(psi_slope_Extero),
+          psi_threshold_RRST = as.numeric(psi_threshold_RRST),
+          psi_threshold_Intero = as.numeric(psi_threshold_Intero) ,
+          psi_threshold_Extero = as.numeric(psi_threshold_Extero),
+          dPrime_RRST = as.numeric(dPrime_RRST),
+          mle_dprime_Intero = as.numeric(mle_dprime_Intero),
+          mle_dprime_Extero = as.numeric(mle_dprime_Extero),
+          confidence_mean_RRST = as.numeric(confidence_mean_RRST),
+          confidence_mean_Intero = as.numeric(confidence_mean_Intero),
+          confidence_mean_Extero = as.numeric(confidence_mean_Extero),
+          mRatio_RRST = as.numeric(mRatio_RRST),
+          mle_m_ratio_Intero = as.numeric(mle_m_ratio_Intero),
+          mle_m_ratio_Extero = as.numeric(mle_m_ratio_Extero),
+          metaD_RRST = as.numeric(metaD_RRST),
+          mle_meta_d_Intero = as.numeric(mle_meta_d_Intero),
+          mle_meta_d_Extero = as.numeric(mle_dprime_Extero)
+)
+
+df_stan <- df_analysis %>% 
+  select(RRST_Thres_s,
+         HRD_Thresh_s,
+         Extero_Thresh_s)
+
+df_anova <- cbind(df_anova, df_stan)
+
+#make the data into long format - wuhuuu 
+df_RRST <- df_anova %>% 
+  select(ID,
+         psi_threshold_RRST, RRST_Thres_s, psi_slope_log_RRST, dPrime_RRST, confidence_mean_RRST, metaD_RRST, mRatio_RRST)
+#Add column called modality
+df_RRST <- df_RRST %>% 
+  mutate(modality = "RRST")
+
+names(df_RRST)<- c("ID","Threshold","Stan_Threshold", "Slope", "dPrime", "Confidence", "metadPrime", "mRatio", "Modality")
+
+
+df_HRD <- df_anova %>% 
+  select(ID,
+         psi_threshold_Intero, HRD_Thresh_s, psi_slope_Intero, mle_dprime_Intero, confidence_mean_Intero, mle_meta_d_Intero, mle_m_ratio_Intero)
+df_HRD <- df_HRD %>% 
+  mutate(modality = "HRD")
+names(df_HRD)<- c("ID","Threshold","Stan_Threshold", "Slope", "dPrime", "Confidence", "metadPrime", "mRatio", "Modality")
+
+df_Extero <- df_anova %>% 
+  select(ID,
+         psi_threshold_Extero, Extero_Thresh_s, psi_slope_Extero, mle_dprime_Extero, confidence_mean_Extero, mle_meta_d_Extero, mle_m_ratio_Extero)
+df_Extero <- df_Extero %>% 
+  mutate(modality = "Auditory")
+names(df_Extero)<- c("ID","Threshold", "Stan_Threshold","Slope", "dPrime", "Confidence", "metadPrime", "mRatio", "Modality")
+
+df_anova <-  bind_rows(df_RRST, df_HRD )
+df_anova <-  bind_rows(df_anova, df_Extero )
+
+df_anova$Modality <- as.factor(df_anova$Modality)
+  
+#I can now inspect the boxplots of the different variables to detect any outliers 
+
+ggplot(df_anova, aes(x = Modality, y = Threshold, fill = Modality)) +
+ geom_boxplot()+
+ stat_summary(fun.y = mean, geom = "point", shape = 23, colour = "Black")+
+ stat_summary(fun.data = mean_cl_normal, geom = "errorbar", color = 'black', width = 0.1)
+
+ggplot(df_anova, aes(x = Modality, y = Stan_Threshold, fill = Modality)) +
+ geom_boxplot()+
+ stat_summary(fun.y = mean, geom = "point", shape = 23, colour = "Black")+
+ stat_summary(fun.data = mean_cl_normal, geom = "errorbar", color = 'black', width = 0.1)
+
+ggplot(df_anova, aes(x = Modality, y = Slope, fill = Modality)) +
+ geom_boxplot()+
+ stat_summary(fun.y = mean, geom = "point", shape = 23, colour = "Black")+
+ stat_summary(fun.data = mean_cl_normal, geom = "errorbar", color = 'black', width = 0.1)
+
+ggplot(df_anova, aes(x = Modality, y = dPrime, fill = Modality)) +
+ geom_boxplot()+
+ stat_summary(fun.y = mean, geom = "point", shape = 23, colour = "Black")+
+  labs(title = "Perceptual sensitivity across modalities")
+#+stat_summary(fun.data = mean_cl_normal, geom = "errorbar", color = 'black', width = 0.1)
+
+
+
+ggplot(df_anova, aes(x = Modality, y = Confidence, fill = Modality)) +
+ geom_boxplot()+
+ stat_summary(fun.y = mean, geom = "point", shape = 23, colour = "Black")+
+  labs(title = "Confidence across modalities")
+#stat_summary(fun.data = mean_cl_normal, geom = "errorbar", color = 'black', width = 0.1)
+
+ggplot(df_anova, aes(x = Modality, y = metadPrime, fill = Modality)) +
+ geom_boxplot()+
+ stat_summary(fun.y = mean, geom = "point", shape = 23, colour = "Black")+
+  labs(title = "Metasensitivity across modalities")
+ #stat_summary(fun.data = mean_cl_normal, geom = "errorbar", color = 'black', width = 0.1)
+
+ggplot(df_mRatio_plot, aes(x = Modality, y = mRatio, fill = Modality)) +
+ geom_boxplot()+
+ stat_summary(fun.y = mean, geom = "point", shape = 23, colour = "Black")+
+  labs(title = "Metacognitive efficiency across modalities")
+ #stat_summary(fun.data = mean_cl_normal, geom = "errorbar", color = 'black', width = 0.1)
+
+df_mRatio_plot <- df_anova 
+
+df_mRatio_plot %>%
+  group_by(Modality) %>%
+  identify_outliers(mRatio)
+outliers <- boxplot(df_mRatio_plot$mRatio, plot=FALSE)$out
+
+df_mRatio_plot<- df_mRatio_plot[-which(df_mRatio_plot$mRatio %in% outliers),]
+
+#There seems to be quit a few outliers, however i preceed to conducted the repeated measures one-way ANOVAS, and wait to exclude any participant till the plots of homogeneity of variances has been computed 
+
+
+
+```
+
+Confirmatory Hypothesis test 
+```{r}
+#What am I testing here?
+#That sensitivity is higher for the auditory task? 
+```
+
+Anova 
+```{r}
+#BE critical towards wich ANOVAS that are meaningful to run - the thresholds are not directly comparable across tasks. And the directionality of the slope has opposite meanings.
+
+###I am making Anovas on dprime, confidence, metadPrime, and mRatio - they are all on the same scale! 
+
+#Repeated measures one-way anova - it should be semi- robust to non-normal data 
+
+# Compute the analysis of variance
+aov_sensitivity <- aov(dPrime ~ Modality, data = df_anova)
+# Summary of the analysis - It tells us that there is a significant difference in sensitivity between the three modalities 
+summary(aov_sensitivity)
+#I now run the Tukey Honest Significant Differences test to inspect between which task pairs a significant mean difference in sensitivity exists - from this out put it can be seen that there is a significant difference between all three tasks 
+TukeyHSD(aov_sensitivity)
+
+#In order to find out exactly which groups are different from each other, we must conduct pairwise t-tests between each group while controlling for the family-wise error rate.
+#The function pairewise.t.test() can be also used to calculate pairwise comparisons between group levels with corrections for multiple testing. - Again it shows that the mean difference in sensitivity is statistically significant for all tasks
+pairwise.t.test(df_anova$dPrime, df_anova$Modality,
+                 p.adjust.method = "bonferroni")
+#(The result is a table of p-values for the pairwise comparisons. Here, the p-values have been adjusted by the Benjamini-Hochberg method "BH" - I changed it to Bonferroni.)
+
+
+#check ANOVA assumptions 
+#The ANOVA test assumes that, the data are normally distributed and the variance across groups are homogeneous. We can check that with some diagnostic plots.
+# 1. Homogeneity of variances
+plot(aov_sensitivity, 1)
+
+#Points 359, 347, 277 are detected as outliers, which can severely affect normality and homogeneity of variance. It can be useful to remove outliers to meet the test assumptions.
+
+#Homogeneity of variance can alse be tested using levenes Test
+library(car)
+leveneTest(dPrime ~ Modality, data = df_anova) #We recommend Levene’s test, which is less sensitive to departures from normal distribution.
+#The result is significant which indicates that the variance across groups are statistically significantly different. 
+#Not sure what this thing is doing 
+fligner.test(dPrime <- Threshold ~ Modality, data = df_anova)
+
+#Checking the assumption of normality of residuals 
+ Normality
+plot(aov_sensitivity, 2)
+#this plot indicates the the same participants be excluded. 
+
+# Extract the residuals
+aov_sensitivity_residuals <- residuals(object = aov_sensitivity )
+# Run Shapiro-Wilk test
+shapiro.test(x = aov_sensitivity_residuals )
+
+#I must accept that my data is not normal - and therefore must use a non-parametric test 
+####BUUUUUT Nico says i should just keep on working with the parametric tests because we have so many participants. 
+
+
+
+#dprime - all significant
+anova_sensitivity <- anova_test(data = df_anova, dv = dPrime, wid = ID, within = Modality)
+get_anova_table(anova_sensitivity)
+pairwise.t.test(df_anova$dPrime, df_anova$Modality, p.adjust.method = "bonferroni")
+TukeyHSD(aov_sensitivity)
+
+#confidence - auditory and RRST are not significantly different
+anova_confidence <- anova_test(data = df_anova, dv = Confidence, wid = ID, within = Modality)
+get_anova_table(anova_confidence)
+pairwise.t.test(df_anova$Confidence, df_anova$Modality, p.adjust.method = "bonferroni")
+TukeyHSD(aov_confidence)
+
+#meta dPrime (same as AROC) - all significant 
+anova_metasen <- anova_test(data = df_anova, dv = metadPrime, wid = ID, within = Modality)
+get_anova_table(anova_metasen)
+pairwise.t.test(df_anova$metadPrime, df_anova$Modality, p.adjust.method = "bonferroni")
+TukeyHSD(aov_metadPrime)
+
+#Effect size 
+eta_squared(aov_metadPrime)
+
+#mRatio - Nothing significant
+anova_mratio <- anova_test(data = df_anova, dv = mRatio, wid = ID, within = Modality)
+get_anova_table(anova_mratio)
+pairwise.t.test(df_anova$mRatio, df_anova$Modality, p.adjust.method = "bonferroni")
+TukeyHSD(aov_mRatio)
+
+
+####What I should use instead
+kruskal.test(dPrime ~ Modality, data = df_anova)
+
+pairwise.wilcox.test(df_anova$dPrime, df_anova$Modality,
+                 p.adjust.method = "bonferroni")
+
+#Should I flip the scores on the slope values from RRST - so acroos all tasks a higer slope values means increased uncertainty? 
+
+
+```
+
+Correlation 
+```{r}
+# I choose a robust correlation test - spearman 
+
+#Correlation test 
+
+df_corr <- df_analysis  %>% 
+  select(RRST_dPrime,
+         RRST_Conf,
+         RRST_metaD,
+         RRST_mRatio,
+         HRD_dPrime,
+         HRD_Conf,
+        HRD_metaD,
+         HRD_mRatio,
+        Extero_dPrime,
+         Extero_Conf,
+         Extero_metaD,
+         Extero_mRatio)
+  
+df_correlation <-round(cor(as.data.frame(df_corr[sapply(df_corr,is.numeric)]), method = "spearman", use="pairwise.complete.obs"), 2)
+                   
+#Showing the output of the correlation matrix in a visually pleasing way
+library("corrplot")
+library("RColorBrewer")
+
+corrplot(df_correlation, method="color", type = "upper", tl.col="black", tl.srt= 45, addCoef.col = "black", number.cex=0.75, col=brewer.pal(n=8, name="RdBu"))
+
+#Correlation plot with insignificant correlations removed
+testRes = cor.mtest(df_corr, conf.level = 0.95, method = "spearman")
+
+corrplot(df_correlation, method="color", type = "upper", tl.col="black", tl.srt= 45, addCoef.col = "black", number.cex=0.75, col=brewer.pal(n=8, name="RdBu"), p.mat = testRes$p, insig = 'blank')
+
+
+###inspecting individual correlations 
+
+
+#dprime
+cor.test(df_corr$RRST_dPrime, df_corr$HRD_dPrime, method = "spearman")
+cor.test(df_corr$RRST_dPrime, df_corr$HRD_dPrime, method = "pearson")
+
+bayesfactor(correlationBF(df_corr$RRST_dPrime, df_corr$HRD_dPrime, rscale = "ultrawide"))
+
+
+cor.test(df_corr$RRST_dPrime, df_corr$Extero_dPrime, method = "spearman")
+cor.test(df_corr$RRST_dPrime, df_corr$Extero_dPrime, method = "pearson")
+
+bayesfactor(correlationBF(df_corr$RRST_dPrime, df_corr$Extero_dPrime, rscale = "ultrawide"))
+
+cor.test(df_corr$HRD_dPrime, df_corr$Extero_dPrime, method = "spearman")
+cor.test(df_corr$HRD_dPrime, df_corr$Extero_dPrime, method = "pearson")
+
+bayesfactor(correlationBF(df_corr$HRD_dPrime, df_corr$Extero_dPrime, rscale = "ultrawide"))
+
+#confidence 
+
+cor.test(df_corr$RRST_Conf, df_corr$HRD_Conf, method = "spearman")
+cor.test(df_corr$RRST_Conf, df_corr$HRD_Conf, method = "pearson")
+
+bayesfactor(correlationBF(df_corr$RRST_Conf, df_corr$HRD_Conf, rscale = "ultrawide"))
+
+
+cor.test(df_corr$RRST_Conf, df_corr$Extero_Conf, method = "spearman")
+cor.test(df_corr$RRST_Conf, df_corr$Extero_Conf, method = "pearson")
+
+bayesfactor(correlationBF(df_corr$RRST_Conf, df_corr$Extero_Conf, rscale = "ultrawide"))
+
+cor.test(df_corr$HRD_Conf, df_corr$Extero_Conf, method = "spearman")
+cor.test(df_corr$HRD_Conf, df_corr$Extero_Conf, method = "pearson")
+
+bayesfactor(correlationBF(df_corr$HRD_Conf, df_corr$Extero_Conf, rscale = "ultrawide"))
+
+#meta dprime
+
+cor.test(df_corr$RRST_metaD, df_corr$HRD_metaD, method = "spearman")
+cor.test(df_corr$RRST_metaD, df_corr$HRD_metaD, method = "pearson")
+
+bayesfactor(correlationBF(df_corr$RRST_metaD, df_corr$HRD_metaD, rscale = "ultrawide"))
+
+cor.test(df_corr$RRST_metaD, df_corr$Extero_metaD, method = "spearman")
+cor.test(df_corr$RRST_metaD, df_corr$Extero_metaD, method = "pearson")
+
+bayesfactor(correlationBF(df_corr$RRST_metaD, df_corr$Extero_metaD, rscale = "ultrawide"))
+
+cor.test(df_corr$HRD_metaD, df_corr$Extero_metaD, method = "spearman")
+cor.test(df_corr$HRD_metaD, df_corr$Extero_metaD, method = "pearson")
+
+bayesfactor(correlationBF(df_corr$HRD_metaD, df_corr$Extero_metaD, rscale = "ultrawide"))
+
+## within tasks 
+cor.test(df_corr$RRST_dPrime, df_corr$RRST_metaD, method = "spearman")
+cor.test(df_corr$HRD_dPrime, df_corr$HRD_metaD, method = "spearman")
+cor.test(df_corr$Extero_dPrime, df_corr$Extero_metaD, method = "spearman")
+
+#mRatio
+cor.test(df_corr$RRST_mRatio, df_corr$HRD_mRatio, method = "spearman")
+cor.test(df_corr$RRST_mRatio, df_corr$HRD_mRatio, method = "pearson")
+
+bayesfactor(correlationBF(df_corr$RRST_mRatio, df_corr$HRD_mRatio, rscale = "ultrawide"))
+
+cor.test(df_corr$RRST_mRatio, df_corr$Extero_mRatio, method = "spearman")
+cor.test(df_corr$RRST_mRatio, df_corr$Extero_mRatio, method = "pearson")
+
+bayesfactor(correlationBF(df_corr$RRST_mRatio, df_corr$Extero_mRatio, rscale = "ultrawide"))
+
+cor.test(df_corr$HRD_mRatio, df_corr$Extero_mRatio, method = "spearman")
+cor.test(df_corr$HRD_mRatio, df_corr$Extero_mRatio, method = "pearson")
+
+bayesfactor(correlationBF(df_corr$HRD_mRatio, df_corr$Extero_mRatio, rscale = "ultrawide"))
+
+
+#Bayes factor 
+
+install.packages("BayesFactor")
+install.packages("bayestestR")
+library("BayesFactor")
+library("bayestestR")
+
+BFtry <- correlationBF(df_corr$RRST_Conf, df_corr$HRD_Conf)
+
+
+
+describe_posterior(BFtry)
+
+bayesfactor(BFtry)
+```
+
+Factor analysis - Looking for biomarkers of anxiety 
+```{r}
+###Just report on the findings of the factor analysis that you did as part of preparing the data. 
+#I want to see if I can predict anxiety scores by threshold and slope from all tasks. 
+
+# I found 3 anxiety factors; somatic, cognitive, and rumination (See plot section)
+
+df_faa <- df_all
+
+
+df_faa <- df_faa %>% 
+  select(
+    f1,
+    f2,
+    f3
+  )
+
+df_corr1 <- df_analysis %>% 
+  select(c(1:18))
+df_faa <- cbind(df_faa, df_corr1)
+
+
+str(df_faa)
+
+df_faa$ID <- as.factor(df_faa$ID)
+names(df_faa)[names(df_faa) == "f1"] <- "Cognitive_anxiety"
+names(df_faa)[names(df_faa) == "f2"] <- "Somatic_anxiety"
+names(df_faa)[names(df_faa) == "f3"] <- "Rumination"
+
+write_csv(df_faa, "df_corr_micah.csv")
+
+
+cor_matrix <- round(cor(as.data.frame(df_faa[sapply(df_faa,is.numeric)]),  method = "pearson", use="pairwise.complete.obs"), 2)
+#view correlation matrix
+cor_matrix
+
+corrplot(cor_matrix, method="color", type = "upper", tl.col="black", tl.srt= 45, addCoef.col = "black", number.cex=0.75, col=brewer.pal(n=8, name="RdBu"))
+
+corrRes = cor.mtest((df_faa[sapply(df_faa,is.numeric)]), conf.level = 0.95,  method = "pearson")
+
+corrplot(cor_matrix, method="color", type = "upper", tl.col="black", tl.srt= 45, addCoef.col = "black", number.cex=0.75, col=brewer.pal(n=8, name="RdBu"), p.mat = corrRes$p, insig = 'blank')
+
+#basically no interesting correlations 
+
+#meta dprime and anxiety HRD
+
+
+bayesfactor(correlationBF(df_faa$HRD_metaD, df_faa$Cognitive_anxiety, rscale = "ultrawide"))
+
+bayesfactor(correlationBF(df_faa$HRD_metaD, df_faa$Rumination, rscale = "ultrawide"))
+
+bayesfactor(correlationBF(df_faa$HRD_metaD, df_faa$Somatic_anxiety, rscale = "ultrawide"))
+
+
+#meta efficiency and anxiety HRD
+bayesfactor(correlationBF(df_faa$HRD_mRatio, df_faa$Cognitive_anxiety, rscale = "ultrawide"))
+
+bayesfactor(correlationBF(df_faa$HRD_mRatio, df_faa$Rumination, rscale = "ultrawide"))
+
+bayesfactor(correlationBF(df_faa$HRD_mRatio, df_faa$Somatic_anxiety, rscale = "ultrawide"))
+
+#Threshold and anxiety RRST
+
+
+bayesfactor(correlationBF(df_faa$RRST_Thresh, df_faa$Cognitive_anxiety, rscale = "ultrawide"))
+
+bayesfactor(correlationBF(df_faa$RRST_Thresh, df_faa$Rumination, rscale = "ultrawide"))
+
+bayesfactor(correlationBF(df_faa$RRST_Thresh, df_faa$Somatic_anxiety, rscale = "ultrawide"))
+
+
+#Sensitivity and anxiety RRST
+
+
+bayesfactor(correlationBF(df_faa$RRST_dPrime, df_faa$Cognitive_anxiety, rscale = "ultrawide"))
+
+bayesfactor(correlationBF(df_faa$RRST_dPrime, df_faa$Rumination, rscale = "ultrawide"))
+
+bayesfactor(correlationBF(df_faa$RRST_dPrime, df_faa$Somatic_anxiety, rscale = "ultrawide"))
+
+#I should figure out how I plot all these at one go 
+
+ggplot(data = df_faa, aes(psi_threshold_Extero, Somatic_anxiety)) +
+ geom_smooth(method = lm)+
+  geom_point(color="steelblue")
+
+ggplot(data = df_faa, aes(psi_threshold_Intero, Somatic_anxiety)) +
+ geom_smooth(method = lm)+
+  geom_point(color="steelblue")
+
+ggplot(data = df_faa, aes(psi_threshold_RRST, Somatic_anxiety)) +
+ geom_smooth(method = lm)+
+  geom_point(color="steelblue")
+
+ggplot(data = df_faa, aes(psi_threshold_Extero, Cognitive_anxiety)) +
+ geom_smooth(method = lm)+
+  geom_point(color="steelblue")
+
+ggplot(data = df_faa, aes(psi_threshold_Intero, Cognitive_anxiety)) +
+ geom_smooth(method = lm)+
+  geom_point(color="steelblue")
+
+ggplot(data = df_faa, aes(psi_threshold_RRST, Cognitive_anxiety)) +
+ geom_smooth(method = lm)+
+  geom_point(color="steelblue")
+
+ggplot(data = df_faa, aes(psi_threshold_Extero, Rumination)) +
+ geom_smooth(method = lm)+
+  geom_point(color="steelblue")
+
+ggplot(data = df_faa, aes(psi_threshold_Intero, Rumination)) +
+ geom_smooth(method = lm)+
+  geom_point(color="steelblue")
+
+ggplot(data = df_faa, aes(psi_threshold_RRST, Rumination)) +
+ geom_smooth(method = lm)+
+  geom_point(color="steelblue")
+
+#Slope
+
+ggplot(data = df_faa, aes(psi_slope_Extero, Somatic_anxiety)) +
+ geom_smooth(method = lm)+
+  geom_point(color="steelblue")
+
+ggplot(data = df_faa, aes(psi_slope_Intero, Somatic_anxiety)) +
+ geom_smooth(method = lm)+
+  geom_point(color="steelblue")
+
+ggplot(data = df_faa, aes(psi_slope_log_RRST, Somatic_anxiety)) +
+ geom_smooth(method = lm)+
+  geom_point(color="steelblue")
+
+ggplot(data = df_faa, aes(psi_slope_Extero, Cognitive_anxiety)) +
+ geom_smooth(method = lm)+
+  geom_point(color="steelblue")
+
+ggplot(data = df_faa, aes(psi_slope_Intero, Cognitive_anxiety)) +
+ geom_smooth(method = lm)+
+  geom_point(color="steelblue")
+
+ggplot(data = df_faa, aes(psi_slope_log_RRST, Cognitive_anxiety)) +
+ geom_smooth(method = lm)+
+  geom_point(color="steelblue")
+
+ggplot(data = df_faa, aes(psi_slope_Extero, Rumination)) +
+ geom_smooth(method = lm)+
+  geom_point(color="steelblue")
+
+ggplot(data = df_faa, aes(psi_slope_Intero, Rumination)) +
+ geom_smooth(method = lm)+
+  geom_point(color="steelblue")
+
+ggplot(data = df_faa, aes(psi_slope_log_RRST, Rumination)) +
+ geom_smooth(method = lm)+
+  geom_point(color="steelblue")
+
+
+ggplot(data = df_corr, aes(Extero_dPrime, Extero_mRatio)) +
+ geom_smooth(method = lm)+
+  geom_point(color="steelblue")
+ 
+```
+
+Exploratory analysis with displeasure ratings5
+
+#Exploratory analysis
+
+```{r}
+#Create a sum displeasures column 
+
+df_explore <- df_all %>% 
+  mutate(displeasure_sum = rowSums(select(., starts_with("displeasure")) , na.rm = TRUE)) %>% 
+  relocate(displeasure_sum, .before =location) %>% 
+  mutate(displeasure_mean = rowMeans(select(., starts_with("displeasure")) , na.rm = TRUE)) %>% 
+  relocate(displeasure_mean, .before =location)
+
+# try something - if NA write 0 
+
+ggplot(df_explore, aes(x = displeasure_mean)) +
+  geom_histogram(aes(y=..density..),binwidth=0.5)
+
+range(df_explore$displeasure_mean)
+```
+
+
+####Demographic information for my participnat section 
+```{r}
+#Just looking at the demographic data given to me - without considering how many of these participants I actually have RRST and HRD data on 
 #Okay i use the RRST_DEMO: csv - since it contains 227 partcipants wich is the same as the demographics when participnats with no stormdb ID are removed 
 
 #Finding details for my participant paragraph 
+#I should use another dataframe - when i have cleaned the date sufficiently - yo obtain these numbers
 
-df_RRST_sub <- read_csv("RRST_DEMO.csv")
-df_RRST_sub$gender <- as.factor(df_RRST_sub$gender)
-df_RRST_sub$smoking <- as.factor(df_RRST_sub$smoking)
+df_all <- read_csv("df_all.csv")
+df_all$gender <- as.factor(df_all$gender)
+df_all$smoking <- as.factor(df_all$smoking)
 
-mean(df_RRST_sub$age)
-sd(df_RRST_sub$age)
-max(df_RRST_sub$age)
-min(df_RRST_sub$age)
+mean(df_all$age, na.rm = T)
+sd(df_all$age, na.rm = T)
+max(df_all$age, na.rm = T)
+min(df_all$age, na.rm = T)
 
-ggplot(df_RRST_sub, aes(x = age)) +
+ggplot(df_all, aes(x = age)) +
   geom_histogram(aes(y=..density..),binwidth=0.25)+
-  stat_function(fun = dnorm,args = list(mean = mean(df_RRST_sub$age, na.rm = TRUE), sd = sd(df_RRST_sub$age, na.rm = TRUE)), colour = "darkgreen", size = 1)+
+  stat_function(fun = dnorm,args = list(mean = mean(df_all$age, na.rm = TRUE), sd = sd(df_all$age, na.rm = TRUE)), colour = "darkgreen", size = 1)+
   labs(title = "Age distribution")
 
-mean(df_RRST_sub$bmi, na.rm = TRUE)
-sd(df_RRST_sub$bmi, na.rm = TRUE)
+mean(df_all$bmi, na.rm = TRUE)
+sd(df_all$bmi, na.rm = TRUE)
 
-mean(df_RRST_sub$height, na.rm = TRUE)
-sd(df_RRST_sub$height, na.rm = TRUE)
-ggplot(df_RRST_sub, aes(x = height)) +
+ggplot(df_all, aes(x = bmi)) +
   geom_histogram(aes(y=..density..),binwidth=0.25)+
-  stat_function(fun = dnorm,args = list(mean = mean(df_RRST_sub$height, na.rm = TRUE), sd = sd(df_RRST_sub$height, na.rm = TRUE)), colour = "darkgreen", size = 1)
+  stat_function(fun = dnorm,args = list(mean = mean(df_all$bmi, na.rm = TRUE), sd = sd(df_all$bmi, na.rm = TRUE)), colour = "darkgreen", size = 1)
+
+mean(df_all$height, na.rm = TRUE)
+sd(df_all$height, na.rm = TRUE)
+
+ggplot(df_all, aes(x = height)) +
+  geom_histogram(aes(y=..density..),binwidth=0.25)+
+  stat_function(fun = dnorm,args = list(mean = mean(df_all$height, na.rm = TRUE), sd = sd(df_all$height, na.rm = TRUE)), colour = "darkgreen", size = 1)
 
 
-count(df_RRST_sub$gender == "1")
+count(df_all$gender == "1")
 
 
-count(df_RRST_sub$language_surveys == "1")
+count(df_all$language_surveys == "1")
 
 #looking at smoking - but i doesn't make much sense when I don't know the scale. 
-count(df_RRST_sub$smoking == "5")
-ggplot(df_RRST_sub, aes(x = smoking)) +
+count(df_all$smoking == "5")
+ggplot(df_all, aes(x = smoking)) +
   geom_histogram(aes(y=..density..),binwidth=0.25)+
-  stat_function(fun = dnorm,args = list(mean = mean(df_RRST_sub$smoking, na.rm = TRUE), sd = sd(df_RRST_sub$smoking, na.rm = TRUE)), colour = "darkgreen", size = 1)
+  stat_function(fun = dnorm,args = list(mean = mean(df_all$smoking, na.rm = TRUE), sd = sd(df_all$smoking, na.rm = TRUE)), colour = "darkgreen", size = 1)
 
 
 #me doing stupid stuff - but I found out that someone has an ID that is 51493 - which makes no sense 
@@ -211,5 +1360,152 @@ max(stupid$stormdb, na.rm = TRUE)
 min(stupid$stormdb, na.rm = TRUE)
 
 
+```
+
+
+##Plots 
+```{r}
+#The factor analysis
+library("ggplot2")
+
+heatmap(fa.out$loadings)
+cor.plot(fa.out, numbers=TRUE, main="3 factors from Stai and Sticsa")
+
+
+data.load.melt <- reshape2::melt(fa.out$loadings[,1:3]) # Melt matrix (needed for ggplot), factors 1-3
+
+data.load.melt <-  data.load.melt %>% 
+  mutate(Var3 = NA) 
+
+
+
+
+data.load.melt$Var3 = ifelse(data.load.melt$Var1 == "stai_21","I feel pleasant", data.load.melt$Var3)
+data.load.melt$Var3 = ifelse(data.load.melt$Var1 == "stai_22","I feel nervous and restless", data.load.melt$Var3)
+data.load.melt$Var3 = ifelse(data.load.melt$Var1 == "stai_23","I feel satisfied with myself", data.load.melt$Var3)
+data.load.melt$Var3 = ifelse(data.load.melt$Var1 == "stai_24","I wish i could be as happy as others seem to be", data.load.melt$Var3)
+data.load.melt$Var3 = ifelse(data.load.melt$Var1 == "stai_25","I feel like a failure", data.load.melt$Var3)
+data.load.melt$Var3 = ifelse(data.load.melt$Var1 == "stai_26","I feel rested", data.load.melt$Var3)
+data.load.melt$Var3 = ifelse(data.load.melt$Var1 == "stai_27","I am calm, cool, and collected", data.load.melt$Var3)
+data.load.melt$Var3 = ifelse(data.load.melt$Var1 == "stai_28","I feel that difficulties are piling up so that i cannot overcome them", data.load.melt$Var3)
+data.load.melt$Var3 = ifelse(data.load.melt$Var1 == "stai_29","I worry too much over something that really doesn't matter", data.load.melt$Var3)
+data.load.melt$Var3 = ifelse(data.load.melt$Var1 == "stai_30","I am happy", data.load.melt$Var3)
+data.load.melt$Var3 = ifelse(data.load.melt$Var1 == "stai_31","I have disturbing thoughts", data.load.melt$Var3)
+data.load.melt$Var3 = ifelse(data.load.melt$Var1 == "stai_32","I lack self-confidence", data.load.melt$Var3)
+data.load.melt$Var3 = ifelse(data.load.melt$Var1 == "stai_33","I feel secure", data.load.melt$Var3)
+data.load.melt$Var3 = ifelse(data.load.melt$Var1 == "stai_34","I make decisions easily", data.load.melt$Var3)
+data.load.melt$Var3 = ifelse(data.load.melt$Var1 == "stai_35","I feel inadequate", data.load.melt$Var3)
+data.load.melt$Var3 = ifelse(data.load.melt$Var1 == "stai_36","I am content ", data.load.melt$Var3)
+data.load.melt$Var3 = ifelse(data.load.melt$Var1 == "stai_37","Some unimportant thoughts runs through my mind and bothers me", data.load.melt$Var3)
+data.load.melt$Var3 = ifelse(data.load.melt$Var1 == "stai_38","I take disappointments so keenly that I cannot put them out of my mind", data.load.melt$Var3)
+data.load.melt$Var3 = ifelse(data.load.melt$Var1 == "stai_39","I am a steady person", data.load.melt$Var3)
+data.load.melt$Var3 = ifelse(data.load.melt$Var1 == "stai_40","I get in a state of tension or turmoil as I think over my recent concerns and interests", data.load.melt$Var3)
+
+data.load.melt$Var3 = ifelse(data.load.melt$Var1 == "sticsa_gm_1","My heart beats fast", data.load.melt$Var3)
+data.load.melt$Var3 = ifelse(data.load.melt$Var1 == "sticsa_gm_2","My muscles are tense", data.load.melt$Var3)
+data.load.melt$Var3 = ifelse(data.load.melt$Var1 == "sticsa_gm_3","I feel agonized over my problems", data.load.melt$Var3)
+data.load.melt$Var3 = ifelse(data.load.melt$Var1 == "sticsa_gm_4","I think that others won't approve of me", data.load.melt$Var3)
+data.load.melt$Var3 = ifelse(data.load.melt$Var1 == "sticsa_gm_5","I feel like I'm missing out on things because I can't make up my mind", data.load.melt$Var3)
+data.load.melt$Var3 = ifelse(data.load.melt$Var1 == "sticsa_gm_6","I feel dizzy", data.load.melt$Var3)
+data.load.melt$Var3 = ifelse(data.load.melt$Var1 == "sticsa_gm_7","My muscles feel weak", data.load.melt$Var3)
+data.load.melt$Var3 = ifelse(data.load.melt$Var1 == "sticsa_gm_8","I feel trembly and shaky", data.load.melt$Var3)
+data.load.melt$Var3 = ifelse(data.load.melt$Var1 == "sticsa_gm_9","I picture some future misfortune", data.load.melt$Var3)
+data.load.melt$Var3 = ifelse(data.load.melt$Var1 == "sticsa_gm_10","I can't get some thought out of my mind", data.load.melt$Var3)
+data.load.melt$Var3 = ifelse(data.load.melt$Var1 == "sticsa_gm_11","I have trouble remembering things", data.load.melt$Var3)
+data.load.melt$Var3 = ifelse(data.load.melt$Var1 == "sticsa_gm_12","My face feels hot", data.load.melt$Var3)
+data.load.melt$Var3 = ifelse(data.load.melt$Var1 == "sticsa_gm_13","I think the worst will happen", data.load.melt$Var3)
+data.load.melt$Var3 = ifelse(data.load.melt$Var1 == "sticsa_gm_14","My arms and legs feel stiff", data.load.melt$Var3)
+data.load.melt$Var3 = ifelse(data.load.melt$Var1 == "sticsa_gm_15","My throat feels dry", data.load.melt$Var3)
+data.load.melt$Var3 = ifelse(data.load.melt$Var1 == "sticsa_gm_16","I keep busy to avoid uncomfortable thoughts", data.load.melt$Var3)
+data.load.melt$Var3 = ifelse(data.load.melt$Var1 == "sticsa_gm_17","I cannot concentrate without irrelevant thoughts intruding", data.load.melt$Var3)
+data.load.melt$Var3 = ifelse(data.load.melt$Var1 == "sticsa_gm_18","My breathing is fast and shallow", data.load.melt$Var3)
+data.load.melt$Var3 = ifelse(data.load.melt$Var1 == "sticsa_gm_19","I worry that I cannot control my thoughts as well as I would like to", data.load.melt$Var3)
+data.load.melt$Var3 = ifelse(data.load.melt$Var1 == "sticsa_gm_20","I have butterflies in my stomach", data.load.melt$Var3)
+data.load.melt$Var3 = ifelse(data.load.melt$Var1 == "sticsa_gm_21","My palms feel clammy", data.load.melt$Var3)
+
+
+names(data.load.melt)[names(data.load.melt) == "Var2"] <- "Factor"
+names(data.load.melt)[names(data.load.melt) == "Var3"] <- "Question"
+
+ggplot(data = data.load.melt, aes(Factor, Question, fill = value))+
+ geom_tile(color = "white")+
+ scale_fill_gradient2(low = "red", high = "blue", mid = "white", na.value = "grey", 
+   midpoint = 0.0, limit = c(-0.6,0.6),   name="Factor loadings") +
+  theme_minimal()+ 
+  labs(title = "Factors of Questionnaire Items")+
+ theme(axis.text.x = element_text(angle = 45, vjust = 1, 
+    size = 12, hjust = 1))+
+ coord_fixed()
+
+```
+
+
+```{r}
+#code for prettier anova boxplot 
+
+# Visualization: box plots with p-values
+pwc <- pwc %>% add_xy_position(x = "time")
+bxp + 
+  stat_pvalue_manual(pwc) +
+  labs(
+    subtitle = get_test_label(res.aov, detailed = TRUE),
+    caption = get_pwc_label(pwc)
+  )
+
+
+```
+
+```{r}
+#plotting interesting correlations 
+df_corr <- df_analysis  %>% 
+  select(c(1:18))
+
+#no correlation d prime plots
+ggplot(df_corr, aes(x = RRST_metaD, y = HRD_metaD)) +
+ geom_point()
+ggplot(df_corr, aes(x = RRST_metaD, y = Extero_metaD)) +
+ geom_point() 
+ggplot(df_corr, aes(x = HRD_metaD, y = Extero_metaD)) +
+ geom_point() 
+
+#correlation plots confidence 
+ggplot(df_corr, aes(x = RRST_Conf, y = HRD_Conf)) +
+ geom_point()+
+ geom_smooth(method = lm)
+ggplot(df_corr, aes(x = RRST_Conf, y = Extero_Conf)) +
+ geom_point() +
+ geom_smooth(method = lm)
+ggplot(df_corr, aes(x = HRD_Conf, y = Extero_Conf)) +
+ geom_point() +
+ geom_smooth(method = lm)
+
+
+#Correlation and no correlation meta d prime = No correlation
+ggplot(df_corr, aes(x = RRST_metaD, y = HRD_metaD)) +
+ geom_point()+
+ geom_smooth(method = lm)
+ggplot(df_corr, aes(x = RRST_metaD, y = Extero_metaD)) +
+ geom_point() +
+ geom_smooth(method = lm)
+ggplot(df_corr, aes(x = HRD_metaD, y = Extero_metaD)) +
+ geom_point() +
+ geom_smooth(method = lm)
+
+#No correlation plots mRatio - i Filtered som crazy HRD m_ratios out ---- not GOOD practice! 
+ggplot(df_try, aes(x = RRST_mRatio, y = HRD_mRatio)) +
+ geom_point()+
+ geom_smooth(method = lm)
+ggplot(df_try, aes(x = RRST_mRatio, y = Extero_mRatio)) +
+ geom_point() +
+ geom_smooth(method = lm)
+ggplot(df_try, aes(x = HRD_mRatio, y = Extero_mRatio)) +
+ geom_point() +
+ geom_smooth(method = lm)
+
+
+#SOMETHING WRONG WITH THIS 
+# df_try <- df_corr %>% 
+#   filter(HRD_mRatio > -20) %>% 
+#   filter(HRD_mRatio < 10) #drops 5 participants 
 ```
 
