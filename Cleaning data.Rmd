@@ -21,33 +21,22 @@ pacman::p_load("tidyverse", "stringr", "dplyr", "plyr")
 #loading the demographic data
 df_demo<- read_csv("demographicsNew.csv")
 
-#Cleaning the demographic data 
+##Cleaning the demographic data 
 df_demo <- df_demo %>% relocate(stormdb, .before = language_pre)
 
-#rename an ID column 
+#rename the ID column 
 
 df_demo <- rename(df_demo,c("stormdb" = "ID"))
 
-#remove Nas from the demographic data - the data goes from 330 to  when removing participants with no ID
-
+#remove Nas from the demographic data 
 df_demo <- df_demo %>%
   drop_na(ID)
 #wuhuuu there were no NA's 
 
 
-#rename an ID column 
-
-df_demo <- rename(df_demo,c("stormdb" = "ID"))
-
 #Remove the zero infront of every ID
 df_demo$ID <- as.numeric(df_demo$ID)
 
-#remove Nas from the demographic data - the data goes from 330 to  when removing participants with no ID
-
-df_demo <- df_demo %>%
-  drop_na(ID)
-#wuhuuu there were only 1 NA in the data  
-df_demo$ID <- as.factor(df_demo$ID)
 
 #I remove a participant with an unreasonable participant number (51493)
 
@@ -83,7 +72,7 @@ df_demo$winter_bathing[is.na(df_demo$winter_bathing)] <- df_demo$winter_bathing_
 #sauna
 df_demo$sauna[is.na(df_demo$sauna)] <- df_demo$sauna_eng[is.na(df_demo$sauna)]
 
-#collapsing these columns as well so I dont have a columns for english speaking participants and another column for danish speaking participants 
+#collapsing these columns as well so I dont have columns for english speaking participants and another column for danish speaking participants 
 #stai 21-40 Y2
 df_demo$stai_21[is.na(df_demo$stai_21)] <- df_demo$stai_21_eng[is.na(df_demo$stai_21)]
 df_demo$stai_22[is.na(df_demo$stai_22)] <- df_demo$stai_22_eng[is.na(df_demo$stai_22)]
@@ -232,7 +221,7 @@ df_res_subject$X1 <- NULL
 df_res_subject$ID <- as.factor(df_res_subject$ID)
 
 
-#load list of partcipnats which staircase did not converge 
+#load list of participnats which staircase did not converge 
 df_res_remove <- read_csv("rrst_badsubs_19-nov-2021.csv")
 df_res_remove$ID <- as.factor(df_res_remove$ID)
 df_res_remove <- df_res_remove %>% 
@@ -280,9 +269,6 @@ df_res_subject <- left_join(df_res_subject,df_confidence_median ,by="ID")
 
 #write a new csv that includes the subject level mean and median confidence. 
 
-#It should also include the log transformed slopes 
-#Log transforming the slopes
-df_res_subject <- df_res_subject %>% mutate(psi_slope_log_RRST = log(psi_slope_RRST))
 
 write_csv(df_res_subject,"df_res_subject.csv")
 
@@ -315,7 +301,7 @@ df_car_subject <- read_delim("hrd.tsv", "\t", escape_double = FALSE,
   df_car_subject$modality <- as.factor(df_car_subject$modality)
   df_car_subject$task <- as.factor(df_car_subject$task)
 
-#making the dataframe wide to have one row pr participant with extero and intero conditions 
+#making the dataframe wide to have one row per participant with extero and intero conditions 
 df_car_subject <- df_car_subject  %>% 
   filter(task == "BaseHRD") %>% #I only keep the data from the base HRD condition
   select(-task,-breath_condition) %>%
@@ -351,12 +337,9 @@ df_car_subject <- df_car_subject %>% relocate(ID, .before =bayesian_meta_d_Inter
 
 #write a new csv with the wide format  
 
-#It should also include the log transformed slopes 
-#Log transforming the slopes
-df_car_subject <- df_car_subject %>% mutate(psi_slope_log_Intero = log(psi_slope_Intero))
-df_car_subject <- df_car_subject %>% mutate(psi_slope_log_Extero = log(psi_slope_Extero))
 
-#should I drop partcipants who has NA's in the variables I am interested in? - It changes my observation count from 524 to 363 - I'm gonna do it. 
+
+#I drop participants who has NA's in the variables I am interested in. It changes my observation count from 524 to 363 
 library("tidyr")
 # df_car_subject <- df_car_subject %>% 
 #   drop_na(psi_threshold_Intero,psi_threshold_Extero, psi_slope_Intero, psi_slope_Extero, confidence_mean_Intero,confidence_mean_Extero, confidence_median_Intero, confidence_median_Extero, dprime_Intero, dprime_Extero, mle_m_ratio_Intero, mle_m_ratio_Extero, psi_slope_log_Intero, psi_slope_log_Extero, bayesian_meta_d_Intero, bayesian_meta_d_Extero)
@@ -401,18 +384,9 @@ ggplot(df_all, aes(x = psi_threshold_RRST)) +
 boxplot(df_all$psi_threshold_RRST)
 
 #Slope 
-# ggplot(df_all, aes(x = psi_slope_RRST)) +
-#   geom_histogram(aes(y=..density..),binwidth=0.15)+
-#   stat_function(fun = dnorm,args = list(mean = mean(df_all$psi_slope_RRST, na.rm = TRUE), sd = sd(df_all$psi_slope_RRST, na.rm = TRUE)), colour = "darkgreen", size = 1)
-
-
-#Log Slope
-ggplot(df_all, aes(x = psi_slope_log_RRST)) +
-  geom_histogram(aes(y=..density..),binwidth=0.15)+
-  stat_function(fun = dnorm,args = list(mean = mean(df_all$psi_slope_log_RRST, na.rm = TRUE), sd = sd(df_all$psi_slope_log_RRST, na.rm = TRUE)), colour = "darkgreen", size = 1)+
-  labs(title = "Log Slope")
-
-boxplot(df_all$psi_slope_log_RRST)
+ ggplot(df_all, aes(x = psi_slope_RRST)) +
+   geom_histogram(aes(y=..density..),binwidth=0.15)+
+   stat_function(fun = dnorm,args = list(mean = mean(df_all$psi_slope_RRST, na.rm = TRUE), sd = sd(df_all$psi_slope_RRST, na.rm = TRUE)), colour = "darkgreen", size = 1)
 
 
 #dPrime
@@ -460,10 +434,8 @@ write_csv(df_all, "df_all.csv") #with 251 participants
 ```
 
 ##Removing outliers HRD
-
 ```{r}
 #I load the data
-
 df_all <- read_csv("df_all.csv")
 
 
@@ -552,10 +524,6 @@ boxplot(df_all$confidence_mean_Extero)
 df_all <- df_all %>% 
   filter(ID != "460")
 
-#SOMETHING WRONG WITH THIS 
-# df_all <- df_all %>% 
-#   filter(dprime_Intero > 0.5) #drops 5 participants 
-
 
 write_csv(df_all, "df_all.csv") #250 participants
 
@@ -566,7 +534,7 @@ write_csv(df_all, "df_all.csv") #250 participants
 
 ```{r}
 ###PRINCIPAL COMPONENT ANLYSIS AND FACTOR ANALYSIS
-#I should do this on the data from the merged dataframe to ensure I have the data from all participants 
+#I  do this on the data from the merged dataframe to ensure I have the data from all participants 
 
 pacman::p_load("tidyverse","tseries", "psych","GPArotation", "mvtnorm", "polycor","corpcor","GPArotation","pastecs", "corrgram", "e1071")
 
@@ -631,12 +599,7 @@ write_csv(df_all, "df_final.csv")
 
 
 
-
-
-
-
-
-###Analysis Good Luck Krisso 
+###Analysis
 Do normality checks 
 ```{r}
 #normality checks - I could use the Shapiro Wilks test but for sample sizes bigger than 50 it is better to inspect the QQ-plots visually. The shapiro wilk test punishes small outliers and deviation too hard i bigger sample sizes. https://www.r-bloggers.com/2021/04/repeated-measures-of-anova-in-r-complete-tutorial/
@@ -726,7 +689,7 @@ ggplot(tidyr::gather(df_analysis[19:21]), aes(value)) +
 #Due to something with Nico's code we only have mle_m_ratio_intero from 200 participants 
  
  
-#Normality check - Would be better If I could allow each plot to have different scales 
+#Normality check - (Would be better If I could allow each plot to have different scales)
  ggplot(gather(df_analysis[1:6]), aes(sample = value))+
    stat_qq()+
    stat_qq_line(colour= "red")+
@@ -807,7 +770,7 @@ df_stan <- df_analysis %>%
 
 df_anova <- cbind(df_anova, df_stan)
 
-#make the data into long format - wuhuuu 
+#make the data into long format
 df_RRST <- df_anova %>% 
   select(ID,
          psi_threshold_RRST, RRST_Thres_s, psi_slope_log_RRST, dPrime_RRST, confidence_mean_RRST, metaD_RRST, mRatio_RRST)
@@ -889,21 +852,16 @@ outliers <- boxplot(df_mRatio_plot$mRatio, plot=FALSE)$out
 
 df_mRatio_plot<- df_mRatio_plot[-which(df_mRatio_plot$mRatio %in% outliers),]
 
-#There seems to be quit a few outliers, however i preceed to conducted the repeated measures one-way ANOVAS, and wait to exclude any participant till the plots of homogeneity of variances has been computed 
-
-
-
 ```
 
 Confirmatory Hypothesis test 
 ```{r}
-#What am I testing here?
-#That sensitivity is higher for the auditory task? 
+
 ```
 
 Anova 
 ```{r}
-#BE critical towards wich ANOVAS that are meaningful to run - the thresholds are not directly comparable across tasks. And the directionality of the slope has opposite meanings.
+#Be critical towards which ANOVAS that are meaningful to run - the thresholds are not directly comparable across tasks. And the directionality of the slope has opposite meanings.
 
 ###I am making Anovas on dprime, confidence, metadPrime, and mRatio - they are all on the same scale! 
 
@@ -913,7 +871,7 @@ Anova
 aov_sensitivity <- aov(dPrime ~ Modality, data = df_anova)
 # Summary of the analysis - It tells us that there is a significant difference in sensitivity between the three modalities 
 summary(aov_sensitivity)
-#I now run the Tukey Honest Significant Differences test to inspect between which task pairs a significant mean difference in sensitivity exists - from this out put it can be seen that there is a significant difference between all three tasks 
+#I now run the Tukey Honest Significant Differences test to inspect between which task pairs a significant mean difference in sensitivity exists - from this output it can be seen that there is a significant difference between all three tasks 
 TukeyHSD(aov_sensitivity)
 
 #In order to find out exactly which groups are different from each other, we must conduct pairwise t-tests between each group while controlling for the family-wise error rate.
@@ -978,16 +936,6 @@ anova_mratio <- anova_test(data = df_anova, dv = mRatio, wid = ID, within = Moda
 get_anova_table(anova_mratio)
 pairwise.t.test(df_anova$mRatio, df_anova$Modality, p.adjust.method = "bonferroni")
 TukeyHSD(aov_mRatio)
-
-
-####What I should use instead
-kruskal.test(dPrime ~ Modality, data = df_anova)
-
-pairwise.wilcox.test(df_anova$dPrime, df_anova$Modality,
-                 p.adjust.method = "bonferroni")
-
-#Should I flip the scores on the slope values from RRST - so acroos all tasks a higer slope values means increased uncertainty? 
-
 
 ```
 
@@ -1111,8 +1059,6 @@ library("bayestestR")
 
 BFtry <- correlationBF(df_corr$RRST_Conf, df_corr$HRD_Conf)
 
-
-
 describe_posterior(BFtry)
 
 bayesfactor(BFtry)
@@ -1126,7 +1072,6 @@ Factor analysis - Looking for biomarkers of anxiety
 # I found 3 anxiety factors; somatic, cognitive, and rumination (See plot section)
 
 df_faa <- df_all
-
 
 df_faa <- df_faa %>% 
   select(
@@ -1149,7 +1094,6 @@ names(df_faa)[names(df_faa) == "f3"] <- "Rumination"
 
 write_csv(df_faa, "df_corr_micah.csv")
 
-
 cor_matrix <- round(cor(as.data.frame(df_faa[sapply(df_faa,is.numeric)]),  method = "pearson", use="pairwise.complete.obs"), 2)
 #view correlation matrix
 cor_matrix
@@ -1163,7 +1107,6 @@ corrplot(cor_matrix, method="color", type = "upper", tl.col="black", tl.srt= 45,
 #basically no interesting correlations 
 
 #meta dprime and anxiety HRD
-
 
 bayesfactor(correlationBF(df_faa$HRD_metaD, df_faa$Cognitive_anxiety, rscale = "ultrawide"))
 
@@ -1281,12 +1224,12 @@ ggplot(data = df_corr, aes(Extero_dPrime, Extero_mRatio)) +
  
 ```
 
-Exploratory analysis with displeasure ratings5
+Exploratory analysis with displeasure ratings
 
 #Exploratory analysis
 
 ```{r}
-#Create a sum displeasures column 
+#Create a sum displeasures column - not included in the thesis 
 
 df_explore <- df_all %>% 
   mutate(displeasure_sum = rowSums(select(., starts_with("displeasure")) , na.rm = TRUE)) %>% 
@@ -1305,8 +1248,8 @@ range(df_explore$displeasure_mean)
 
 ####Demographic information for my participnat section 
 ```{r}
-#Just looking at the demographic data given to me - without considering how many of these participants I actually have RRST and HRD data on 
-#Okay i use the RRST_DEMO: csv - since it contains 227 partcipants wich is the same as the demographics when participnats with no stormdb ID are removed 
+#Looking at the demographic data given to me - without considering how many of these participants I actually have RRST and HRD data on 
+
 
 #Finding details for my participant paragraph 
 #I should use another dataframe - when i have cleaned the date sufficiently - yo obtain these numbers
@@ -1342,7 +1285,6 @@ ggplot(df_all, aes(x = height)) +
 
 count(df_all$gender == "1")
 
-
 count(df_all$language_surveys == "1")
 
 #looking at smoking - but i doesn't make much sense when I don't know the scale. 
@@ -1376,8 +1318,6 @@ data.load.melt <- reshape2::melt(fa.out$loadings[,1:3]) # Melt matrix (needed fo
 
 data.load.melt <-  data.load.melt %>% 
   mutate(Var3 = NA) 
-
-
 
 
 data.load.melt$Var3 = ifelse(data.load.melt$Var1 == "stai_21","I feel pleasant", data.load.melt$Var3)
@@ -1440,20 +1380,6 @@ ggplot(data = data.load.melt, aes(Factor, Question, fill = value))+
 ```
 
 
-```{r}
-#code for prettier anova boxplot 
-
-# Visualization: box plots with p-values
-pwc <- pwc %>% add_xy_position(x = "time")
-bxp + 
-  stat_pvalue_manual(pwc) +
-  labs(
-    subtitle = get_test_label(res.aov, detailed = TRUE),
-    caption = get_pwc_label(pwc)
-  )
-
-
-```
 
 ```{r}
 #plotting interesting correlations 
@@ -1502,10 +1428,5 @@ ggplot(df_try, aes(x = HRD_mRatio, y = Extero_mRatio)) +
  geom_point() +
  geom_smooth(method = lm)
 
-
-#SOMETHING WRONG WITH THIS 
-# df_try <- df_corr %>% 
-#   filter(HRD_mRatio > -20) %>% 
-#   filter(HRD_mRatio < 10) #drops 5 participants 
 ```
 
